@@ -1,0 +1,10 @@
+numpy>=1.14.0
+scipy
+pandas
+statsmodels
+anndata
+seaborn
+matplotlib
+gprofiler
+numpydoc
+sphinx
