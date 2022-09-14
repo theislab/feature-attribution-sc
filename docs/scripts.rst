@@ -1,5 +1,0 @@
-Methods
-=======
-
-blah blah
----------
