@@ -5,35 +5,36 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Path setup --------------------------------------------------------------
+import os
 import sys
 from datetime import datetime
 from importlib.metadata import metadata
 from pathlib import Path
 
 HERE = Path(__file__).parent
-sys.path.insert(0, str(HERE / "extensions"))
-
+#sys.path.insert(0, str(HERE / "extensions"))
+sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
-info = metadata("feature-attribution")
-project = info["Name"]
-author = info["Author"]
-copyright = f"{datetime.now():%Y}, {author}."
-version = info["Version"]
+# info = metadata("feature-attribution")
+# project = info["Name"]
+# author = info["Author"]
+# copyright = f"{datetime.now():%Y}, {author}."
+# version = info["Version"]
 
-# The full version, including alpha/beta/rc tags
-release = info["Version"]
+# # The full version, including alpha/beta/rc tags
+# release = info["Version"]
 
-bibtex_bibfiles = ["references.bib"]
-templates_path = ["_templates"]
-nitpicky = True  # Warn about broken links
-needs_sphinx = "4.0"
+# bibtex_bibfiles = ["references.bib"]
+# templates_path = ["_templates"]
+# nitpicky = True  # Warn about broken links
+# needs_sphinx = "4.0"
 
 html_context = {
     "display_github": True,  # Integrate GitHub
     "github_user": "yugeji",  # Username
-    "github_repo": project,  # Repo name
+    "github_repo": "feature-attribution-sc",  # Repo name
     "github_version": "main",  # Version
     "conf_py_path": "/docs/",  # Path in the checkout to the docs root
 }
@@ -48,8 +49,8 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    "sphinxcontrib.bibtex",
-    "sphinx_autodoc_typehints",
+#    "sphinxcontrib.bibtex",
+#    "sphinx_autodoc_typehints",
     "scanpydoc.definition_list_typed_field",
     "nbsphinx",
     "sphinx.ext.mathjax",
