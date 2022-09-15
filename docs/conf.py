@@ -8,7 +8,7 @@
 import os
 import sys
 from datetime import datetime
-from importlib.metadata import metadata
+#from importlib.metadata import metadata
 from pathlib import Path
 
 HERE = Path(__file__).parent
