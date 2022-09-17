@@ -1,7 +1,7 @@
-name: py37_fa_base
+name: py37_fa_train2
 channels:
-  - anaconda
   - bioconda
+  - anaconda
   - r
   - conda-forge
   - defaults
@@ -132,7 +132,6 @@ dependencies:
   - lzo=2.10=h516909a_1000
   - magma=2.5.4=h5da55e3_2
   - make=4.3=hd18ef5c_1
-  - markupsafe=2.0.1=py37h5e8e339_0
   - matplotlib=3.4.3=py37h89c1867_1
   - matplotlib-base=3.4.3=py37h1058ff1_1
   - matplotlib-inline=0.1.3=pyhd8ed1ab_0
@@ -158,8 +157,6 @@ dependencies:
   - notebook=6.4.4=pyha770c72_0
   - numba=0.54.1=py37h2d894fd_0
   - numexpr=2.7.3=py37he8f5f7f_0
-  - numpy=1.19.2=py37h54aff64_0
-  - numpy-base=1.19.2=py37hfa32c7d_0
   - olefile=0.46=pyh9f0ad1d_1
   - openjpeg=2.4.0=hb52868f_1
   - openssl=1.0.2u=h516909a_0
@@ -199,7 +196,6 @@ dependencies:
   - python-annoy=1.17.0=py37hcd2ae1e_2
   - python-dateutil=2.8.2=pyhd8ed1ab_0
   - python_abi=3.7=2_cp37m
-  - pytorch=1.8.0=cuda102py37h4454d97_0
   - pytorch-gpu=1.8.0=cuda102py37hf05f184_0
   - pytz=2021.3=pyhd8ed1ab_0
   - pyyaml=5.4.1=py37h5e8e339_1
@@ -246,7 +242,6 @@ dependencies:
   - seaborn-base=0.11.1=pyhd8ed1ab_1
   - secretstorage=3.3.1=py37h89c1867_0
   - send2trash=1.8.0=pyhd8ed1ab_0
-  - setuptools=58.2.0=py37h89c1867_0
   - shellingham=1.4.0=pyh44b312d_0
   - sip=4.19.8=py37hf484d3e_0
   - six=1.16.0=pyh6c4a22f_0
@@ -263,10 +258,10 @@ dependencies:
   - tomlkit=0.7.2=py37h89c1867_0
   - torchvision=0.10.1=py37cuda102hbbb9a51_0_cuda
   - tornado=6.1=py37h5e8e339_1
+  - tqdm=4.64.0=py37h06a4308_0
   - traitlets=5.1.0=pyhd8ed1ab_0
-  - typing-extensions=3.10.0.2=hd8ed1ab_0
-  - typing_extensions=3.10.0.2=pyha770c72_0
   - tzlocal=2.1=py37_0
+  - umap-learn=0.5.3=py37h89c1867_0
   - upsetplot=0.3.0.post3=py_0
   - urllib3=1.26.7=pyhd8ed1ab_0
   - virtualenv=20.4.7=py37h89c1867_0
@@ -293,83 +288,61 @@ dependencies:
   - zlib=1.2.11=h36c2ea0_1013
   - zstd=1.5.0=ha95c52a_0
   - pip:
-    - absl-py==0.12.0
-    - aiohttp==3.7.4.post0
-    - argparse==1.4.0
-    - astunparse==1.6.3
-    - async-timeout==3.0.1
-    - cached-property==1.5.2
-    - cachetools==4.2.2
-    - click==7.1.2
-    - dask==2021.6.0
-    - distance==0.1.3
-    - dm-tree==0.1.6
+    - absl-py==1.2.0
+    - aiohttp==3.8.1
+    - aiosignal==1.2.0
+    - async-timeout==4.0.2
+    - asynctest==0.13.0
+    - cachetools==5.2.0
+    - chex==0.1.5
+    - dm-tree==0.1.7
     - docrep==0.3.2
     - et-xmlfile==1.1.0
-    - flatbuffers==1.12
-    - fsspec==2021.5.0
-    - gast==0.4.0
-    - git-lfs==1.6
-    - google-auth==1.30.1
-    - google-auth-oauthlib==0.4.4
-    - google-pasta==0.2.0
-    - gprofiler-official==1.0.0
-    - grpcio==1.34.1
-    - h5py==2.10.0
-    - hyperopt==0.2.5
-    - iniconfig==1.1.1
-    - keras-nightly==2.5.0.dev2021032900
-    - keras-preprocessing==1.1.2
-    - legacy-api-wrap==1.2
-    - leidenalg==0.8.3
-    - locket==0.2.1
-    - loompy==3.0.6
+    - etils==0.8.0
+    - flax==0.6.0
+    - frozenlist==1.3.1
+    - fsspec==2022.8.2
+    - google-auth==2.11.0
+    - google-auth-oauthlib==0.4.6
+    - grpcio==1.49.0
+    - h5py==3.7.0
+    - importlib-resources==5.9.0
+    - jax==0.3.17
+    - jaxlib==0.3.15
     - markdown==3.3.4
-    - multidict==5.1.0
-    - networkx==2.5
-    - oauthlib==3.1.1
-    - openpyxl==3.0.9
+    - markupsafe==2.1.1
+    - multidict==6.0.2
+    - multipledispatch==0.6.0
+    - networkx==2.6.3
+    - numpy==1.19.4
+    - numpyro==0.10.1
+    - oauthlib==3.2.1
+    - openpyxl==3.0.10
     - opt-einsum==3.3.0
-    - partd==1.2.0
-    - pluggy==0.13.1
-    - protobuf==3.17.2
-    - py==1.9.0
+    - optax==0.1.3
+    - protobuf==3.19.5
     - pyasn1==0.4.8
     - pyasn1-modules==0.2.8
-    - pydeprecate==0.3.0
+    - pydeprecate==0.3.1
     - pyro-api==0.1.2
-    - pyro-ppl==1.7.0
-    - pytest==6.1.2
-    - python-igraph==0.8.3
-    - pytorch-lightning==1.3.8
-    - regex==2021.4.4
-    - requests-oauthlib==1.3.0
-    - rich==10.11.0
-    - rsa==4.7.2
-    - scanpy==1.8.0
-    - scvelo==0.2.2
-    - scvi-tools==0.14.1
-    - setuptools-scm==4.1.2
-    - sinfo==0.3.1
-    - sklearn==0.0
-    - sparse==0.12.0
-    - stdlib-list==0.7.0
-    - tabulate==0.8.7
-    - tensorboard==2.6.0
+    - pyro-ppl==1.8.2
+    - pytorch-lightning==1.5.10
+    - requests-oauthlib==1.3.1
+    - rich==11.2.0
+    - rsa==4.9
+    - scanpy==1.9.1
+    - scgen==2.1.0
+    - scvi-tools==0.16.3
+    - session-info==1.0.0
+    - setuptools==59.5.0
+    - stdlib-list==0.8.0
+    - tensorboard==2.10.0
     - tensorboard-data-server==0.6.1
-    - tensorboard-plugin-wit==1.8.0
-    - tensorflow==2.5.0
-    - tensorflow-estimator==2.5.0
-    - tensorflow-probability==0.12.2
-    - termcolor==1.1.0
-    - texttable==1.6.3
-    - toolz==0.11.1
-    - torch==1.9.1
-    - torchmetrics==0.5.1
-    - tqdm==4.48.2
-    - umap-learn==0.4.6
-    - werkzeug==2.0.1
-    - wrapt==1.12.1
-    - xlsxwriter==1.4.3
-    - yarl==1.6.3
-prefix: /home/icb/yuge.ji/miniconda3/envs/py37_backup
+    - tensorboard-plugin-wit==1.8.1
+    - toolz==0.12.0
+    - torch==1.12.1
+    - torchmetrics==0.9.3
+    - typing-extensions==4.3.0
+    - werkzeug==2.2.2
+    - yarl==1.8.1
+prefix: /home/icb/yuge.ji/miniconda3/envs/py37_fa_train2
