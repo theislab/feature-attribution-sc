@@ -1,6 +1,3 @@
-"""
-Do you think this is gonna show up on RTD?
-"""
 import pandas as pd
 from gprofiler import GProfiler
 def enrich(query, background, return_full=False, organism='hsapiens', sources=['GO:BP']):
