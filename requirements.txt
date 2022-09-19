@@ -1,8 +1,8 @@
-cnumpy>=1.14.0
+numpy>=1.14.0
 scipy
 pandas
 statsmodels
 anndata
 seaborn
 matplotlib
-gprofiler
+gprofiler-official

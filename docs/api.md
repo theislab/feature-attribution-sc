@@ -8,5 +8,6 @@
 .. autosummary::
     :toctree: _autosummary
 
-    scripts.de_utils.plot_correlation
+    scripts.enrich
+    scripts.plot_correlation
 ```
