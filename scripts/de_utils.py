@@ -1,6 +1,27 @@
 """
 Do you think this is gonna show up on RTD?
 """
+import pandas as pd
+from gprofiler import GProfiler
+def enrich(query, background, return_full=False, organism='hsapiens', sources=['GO:BP']):
+    gp = GProfiler(return_dataframe=True, user_agent='g:GOSt')
+
+    df = gp.profile(
+        organism=organism, sources=sources, user_threshold=0.05,
+        significance_threshold_method='fdr', 
+        background=list(background),
+        query=list(query), 
+        no_evidences=False)
+
+    if return_full:
+        return df
+    else:
+        return df[['name', 'p_value', 'intersections']]
+
+import scipy
+import numpy as np
+import matplotlib.pyplot as plt
+
 def plot_correlation(df, col1, col2, margin_thresh = 30, expression_thresh = 25, plot_legend=False):
     """Scatterplot of two columns of a dataframe containing scores or pvalues.
     Points with significant correlation are colored in blue.
