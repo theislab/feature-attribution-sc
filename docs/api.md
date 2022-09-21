@@ -10,4 +10,6 @@
 
     scripts.enrich
     scripts.plot_correlation
+    scripts.roc_auc_hlca
+    scripts.hlca_markers
 ```

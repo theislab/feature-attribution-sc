@@ -8,6 +8,7 @@ dependencies:
    - conda-forge::r-statmod==1.4.37
    - conda-forge::scanpy==1.9.1
    - conda-forge::scvi-tools==0.16.3
+   - bioconda::gprofiler-official
    - pip
    - pip:
        - scgen==2.1.0
