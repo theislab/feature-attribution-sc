@@ -1,5 +1,6 @@
 import torch
 
+
 def apply_mask(x, y, threshold=0., feature_importance='random'):
     """
     Apply the mask of a feature importance metrics
@@ -16,3 +17,33 @@ def apply_mask(x, y, threshold=0., feature_importance='random'):
         return masked_outputs
     else:
         return x
+
+
+def produce_mask(x,
+                 y,
+                 CSV_PATH='/home/icb/till.richter/git/feature-attribution-sc/outputs/random/task1_random.csv',
+                 threshold=0.5):
+    """
+    Given a batch of data and their corresponding labels, apply a mask that is unique for each label
+    :param x: data batch, e.g., perturbations x genes, cells x genes
+    :param y: labels, e.g., perturbations, cells
+    :param CSV_PATH: Path to the csv file, that contains the ranking of feature importance maps
+    :param threshold: threshold of this experiment -> amount of features set to 0
+    :return: masked output
+    """
+    importance = pd.read_csv(CSV_PATH)
+    importance_alpha = importance.sort_values('gene_symbols')
+
+    # rank each column in ascending order
+    ranks = importance_alpha.rank(method='first')
+
+    # from the ranking and the threshold, build a 0-1 mask for each perturbation
+    num_ones = int(threshold * len(ranks))
+    mask = pd.DataFrame(ranks >= num_ones).astype(int)
+
+    # given data (all genes and batch of perturbations) and labels (name of perturbation), apply corresponding mask
+    for pert in range(len(y)):
+        mask_i = mask[y[pert]].tolist()
+        x[:, pert] *= mask_i
+
+    return x
