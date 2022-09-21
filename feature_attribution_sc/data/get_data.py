@@ -9,8 +9,13 @@ import numpy as np
 
 
 def get_scgen_data(batch_size,
-                   base_path='/storage/groups/ml01/workspace/yuge.ji/sc-pert/',
                    data_path='/home/icb/yuge.ji/projects/feature-attribution-sc'):
+    """
+    Receive the adata object given a path to the corresponding .h5ad file
+    :param batch_size: batch size of the SCGEN model
+    :param data_path: PATH where the .h5ad file is located
+    :return:
+    """
     adata = sc.read(f'{data_path}/datasets/scgen_norman19.h5ad')
     models = {}
     for file in os.listdir(f'{data_path}/models'):
@@ -25,6 +30,11 @@ def get_scgen_data(batch_size,
 
 
 def get_hlca_data(batch_size):
+    """
+    Receive the PyTorch dataloader and adata object of the HLCA
+    :param batch_size: batch size
+    :return: dataloader, adata
+    """
     hlca_path = '/lustre/groups/ml01/workspace/hlca_lisa.sikkema_malte.luecken/HLCA_reproducibility/data/HLCA_core_h5ads/HLCA_v1_integration/HLCA_v1_scANVI_input.h5ad'
     adata = sc.read(hlca_path)
     model = scvi.model.SCANVI.load('/home/icb/yuge.ji/projects/HLCA_reproducibility/notebooks/3_atlas_extension/scanvi_model/', adata)

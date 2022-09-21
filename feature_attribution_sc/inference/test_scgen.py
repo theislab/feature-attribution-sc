@@ -2,6 +2,13 @@ import scanpy as sc
 
 
 def test_scgen(adata, model, example_pert='KLF1'):
+    """
+    Test a given model on a subset of features, that were selected using a feature attribution method.
+    :param adata: Adata object, underlying dataset with metadata for SCGEN method
+    :param model: Trained SCGEN model
+    :param example_pert: Example perturbation, required for the evaluation in SCGEN (see tutorial for more info)
+    :return: R2 values given ground truth y and no perturbation y
+    """
     ctrl_adata = adata[adata.obs.perturbation_name.isin(['control', example_pert])]
     sc.tl.rank_genes_groups(ctrl_adata, groupby='perturbation_name', reference='control', method='wilcoxon')
 
