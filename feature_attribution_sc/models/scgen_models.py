@@ -8,6 +8,11 @@ import anndata as ad
 from feature_attribution_sc.explainers.mask import apply_mask
 
 class SCGENVAECustom(scgen.SCGENVAE):
+    """
+    This class inherits the original SCGENVAE class and overwrites the initialization, inference, and get inference
+    input functions. Feature importance and thresholds are passed to the inference step, which calls the application
+    of the mask, and now passes a masked datapoint.
+    """
     def __init__(
             self,
             n_input: int,
@@ -82,6 +87,10 @@ class SCGENVAECustom(scgen.SCGENVAE):
 
 
 class SCGENCustom(scgen.SCGEN):
+    """
+    This class inherits the original SCGEN class and overwrites the initialization. This only adds feature inportance
+    and threshold to the initialization and passes them to the VAE.
+    """
     def __init__(
             self,
             adata: ad.AnnData,
