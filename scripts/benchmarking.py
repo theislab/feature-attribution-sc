@@ -3,6 +3,10 @@ from sklearn.metrics import roc_auc_score
 
 def hlca_markers():
     """Parse marker gene dictionary from csv for ground truth.
+
+    Returns
+    -------
+    A dictionary of form {cell_type: [marker genes]}
     """
     marker_df = pd.read_csv('/home/icb/yuge.ji/projects/HLCA_reproducibility/notebooks/3_atlas_extension/markergenes.csv', index_col=0)
     hlca_hvgs = pd.read_csv('datasets/hlca_hvgs.csv').gene_symbols.values
@@ -12,7 +16,7 @@ def hlca_markers():
         ct = marker_df.columns[i].split('_')[0]
         query_res = marker_df[[c for c in marker_df.columns if ct in c]][[f'{ct}_marker', f'{ct}_marker_for']].dropna().values
         for value, key in query_res:
-            k = (key+' ').split('(')[0][:-1]  # TODO: major hack for now, fix later
+            k = '('.join((key+' ').split('(')[:-1])[:-1]  # TODO: major hack for now, fix later
             marker_dict.setdefault(k, []).append(value)
     
     # remove markers if not in adata due to HVG subsetting. Remaining: 105/150
@@ -31,6 +35,10 @@ def hlca_markers():
 
 def roc_auc_hlca(ranking):
     """Calculate roc_auc for hlca given a list of rankings.
+
+    Params
+    ------
+    ranking : pd.DataFrame
     """
     marker_dict = hlca_markers()
     y_true = ranking[list(set(ranking.columns) & set(marker_dict.keys()))].copy()
@@ -40,4 +48,20 @@ def roc_auc_hlca(ranking):
         if ct in y_true.columns:
             y_true.loc[genes, ct] = 1
 
-    return roc_auc_score(y_true.values, mean_df[y_true.columns].values)
+    return roc_auc_score(y_true.values, ranking[y_true.columns].values)
+
+def roc_auc_crispr(ranking):
+    """
+    Calculate roc_auc for a CRISPR dataset where the source of ground
+    truth is the sgRNA of the condition.
+
+    Params
+    ------
+    ranking : pd.DataFrame
+    """
+    y_true = ranking[list(set(ranking.columns) & set(ranking.index))].copy()
+    y_true[:] = 0
+    for pert in ranking.columns:
+        if pert in y_true.index:
+            y_true.loc[pert, pert] = 1
+    return roc_auc_score(y_true.values, ranking[y_true.columns].values)

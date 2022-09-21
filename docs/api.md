@@ -11,6 +11,7 @@
     scripts.enrich
     scripts.plot_correlation
     scripts.roc_auc_hlca
+    scripts.roc_auc_crispr
     scripts.hlca_markers
     
 .. currentmodule:: feature_attribution_sc
