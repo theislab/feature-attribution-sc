@@ -6,3 +6,9 @@ anndata
 seaborn
 matplotlib
 gprofiler-official
+torch
+scikit-learn
+scgen
+scvi-tools
+scanpy
+pytorch-lightning
