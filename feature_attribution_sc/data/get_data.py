@@ -4,21 +4,24 @@ import scvi
 import scanpy as sc
 import scgen
 import os
+import pandas as pd
+import numpy as np
 
 
-def get_scgen_data(batch_size):
-    adata = sc.read(f'{base_path}/datasets/scgen_norman19.h5ad')
+def get_scgen_data(batch_size,
+                   base_path='/storage/groups/ml01/workspace/yuge.ji/sc-pert/',
+                   data_path='/home/icb/yuge.ji/projects/feature-attribution-sc'):
+    adata = sc.read(f'{data_path}/datasets/scgen_norman19.h5ad')
     models = {}
-    for file in os.listdir(f'{base_path}/models'):
+    for file in os.listdir(f'{data_path}/models'):
         if 'scgen' in file:
             print('loading', file)
-            models['_'.join(file.split('_')[1:])] = scgen.SCGEN.load(f'{base_path}/models/{file}', adata=adata)
+            models['_'.join(file.split('_')[1:])] = scgen.SCGEN.load(f'{data_path}/models/{file}', adata=adata)
 
     indices = np.random.choice(adata.n_obs, size=100, replace=False)
-    for model in models:
-        dataloaders = model._make_data_loader(adata=adata, indices=indices, batch_size=batch_size)
-
-    return dataloaders, adata
+    # for model in models:
+    #     dataloaders = model._make_data_loader(adata=adata, indices=indices, batch_size=batch_size)
+    return None, adata
 
 
 def get_hlca_data(batch_size):

@@ -9,8 +9,10 @@ from pytorch_lightning.loggers import TensorBoardLogger
 
 # python packages
 import os
+
 os.chdir('../')
 import sys
+
 root = os.path.dirname(os.path.abspath(os.curdir))
 sys.path.append(root)
 import importlib
@@ -22,14 +24,15 @@ import scgen
 
 # own packages
 from feature_attribution_sc.data.get_data import get_scgen_data, get_hlca_data
-from feature_attribution_sc.models.get_model import get_scgen
+from feature_attribution_sc.models.scgen_models import SCGENCustom
+from feature_attribution_sc.inference.test_scgen import test_scgen
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', type=str, default='scanvi')
+    parser.add_argument('--model_name', type=str, default='scgen')
     parser.add_argument('--batch_size', type=int, default=256)
-    parser.add_argument('--feature_importance', type=str, default='None')
+    parser.add_argument('--feature_importance', type=str, default='random')
     parser.add_argument('--threshold', type=float, default=0.0)
     parser.add_argument('--mode', type=str, default='test')
     return parser.parse_args()
@@ -55,7 +58,7 @@ if __name__ == '__main__':
     seed_everything(90)
 
     # CHECKPOINT HANDLING  - do we need checkpoints?
-    CHECKPOINT_PATH = '/lustre/scratch/users/yuge.ji/fasc/' # TO DO - more beautiful directory structure
+    CHECKPOINT_PATH = '/lustre/scratch/users/yuge.ji/fasc/'  # TO DO - more beautiful directory structure
     checkpoint_callback = ModelCheckpoint(
         save_top_k=2,
         monitor="val_loss",
@@ -78,51 +81,52 @@ if __name__ == '__main__':
     else:
         resume_from_checkpoint = None
 
-
     # TRAIN / TEST
     # TO DO: INCLUDE MASKING OF GENES BEFOREHAND AND GIVE ESTIM THAT STUFF
     if args.model_name == 'scanvi':
         print('Using scaNVI trained model, not implemented yet')
     elif args.model_name == 'scgen':
         print('Using scGEN trained model')
-        estim = SCGENCustom(adata, args.feature_importance, args.threshold)
-        if args.mode == 'train':
-            estim.train(
-                enable_checkpointing=True,
-                callbacks=[checkpoint_callback,
-                           best_checkpoint_callback,
-                           pl.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=args.patience),
-                           TQDMProgressBar(refresh_rate=100)],
-                # resume_from_checkpoint=resume_from_checkpoint,
-                check_val_every_n_epoch=1,
-                limit_train_batches=int(len(id_datamodule.idx_train) / args.batch_size),  # 1000,
-                limit_val_batches=int(len(id_datamodule.idx_val) / args.batch_size),  # 1000,
-                logger=TensorBoardLogger(CHECKPOINT_PATH),  # TO DO: CHECK THE LOGGING IN SCVI
-                gpus=1,
-                num_sanity_val_steps=0,
-                log_every_n_steps=100,
-                # auto_lr_find='learning_rate',
-                auto_lr_find=False,
-                progress_bar_refresh_rate=100
-            )
-        elif args.mode == 'test':
-            estim.test(
-                enable_checkpointing=True,
-                callbacks=[checkpoint_callback,
-                           best_checkpoint_callback,
-                           pl.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=args.patience),
-                           TQDMProgressBar(refresh_rate=100)],
-                # resume_from_checkpoint=resume_from_checkpoint,
-                check_val_every_n_epoch=1,
-                limit_train_batches=int(len(id_datamodule.idx_train) / args.batch_size),  # 1000,
-                limit_val_batches=int(len(id_datamodule.idx_val) / args.batch_size),  # 1000,
-                logger=TensorBoardLogger(CHECKPOINT_PATH),
-                gpus=1,
-                num_sanity_val_steps=0,
-                log_every_n_steps=100,
-                # auto_lr_find='learning_rate',
-                auto_lr_find=False,
-                progress_bar_refresh_rate=100
-            )
+        SCGENCustom.setup_anndata(adata)
+        # estim = SCGENCustom(adata, args.feature_importance, args.threshold)
+        MODEL_DIR = '/home/icb/yuge.ji/projects/feature-attribution-sc'
 
+    if args.mode == 'train':
+        estim.train(
+            enable_checkpointing=True,
+            callbacks=[checkpoint_callback,
+                       best_checkpoint_callback,
+                       pl.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=args.patience),
+                       TQDMProgressBar(refresh_rate=100)],
+            # resume_from_checkpoint=resume_from_checkpoint,
+            check_val_every_n_epoch=1,
+            limit_train_batches=int(len(id_datamodule.idx_train) / args.batch_size),  # 1000,
+            limit_val_batches=int(len(id_datamodule.idx_val) / args.batch_size),  # 1000,
+            logger=TensorBoardLogger(CHECKPOINT_PATH),  # TO DO: CHECK THE LOGGING IN SCVI
+            gpus=1,
+            num_sanity_val_steps=0,
+            log_every_n_steps=100,
+            # auto_lr_find='learning_rate',
+            auto_lr_find=False,
+            progress_bar_refresh_rate=100
+        )
+    elif args.mode == 'test':
+        if args.model_name == 'scanvi':  # TBD
+            print('TO BE DONE')
+        elif args.model_name == 'scgen':
+            estim = {}
+            for file in os.listdir(f'{MODEL_DIR}/models'):
+                if 'scgen' in file:
+                    print('loading', file)
+                    SCGENCustom.__name__ = "SCGEN"
+                    estim['_'.join(file.split('_')[1:])] = SCGENCustom.load(f'{MODEL_DIR}/models/{file}', adata=adata)
+                    SCGENCustom.__name__ = "SCGENCustom"
+                    estim['_'.join(file.split('_')[1:])].module.feature_attribution = args.feature_importance
+                    estim['_'.join(file.split('_')[1:])].module.threshold = args.threshold
 
+                    r2_ground_truth, r2_no_treatment = test_scgen(adata,
+                                                                  estim['_'.join(file.split('_')[1:])],
+                                                                  example_pert='KLF1')
+                    print('MODEL {}\n\nR2 GROUND TRUTH:\n{}\nR2 NO TREATMENT:\n{}\n'.format(file.split('_')[1:],
+                                                                                            r2_ground_truth,
+                                                                                            r2_no_treatment))
