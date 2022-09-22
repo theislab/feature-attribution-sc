@@ -120,12 +120,16 @@ if __name__ == '__main__':
                     print('loading', file)
                     SCGENCustom.__name__ = "SCGEN"
                     estim['_'.join(file.split('_')[1:])] = SCGENCustom.load(f'{MODEL_DIR}/models/{file}', adata=adata)
+                    # map labels of forward pass (int) to class names (str)
+                    labels = estim['_'.join(file.split('_')[1:])].adata_manager.get_state_registry(
+                        scvi.REGISTRY_KEYS.LABELS_KEY)['categorical_mapping']
                     SCGENCustom.__name__ = "SCGENCustom"
                     estim['_'.join(file.split('_')[1:])].module.feature_attribution = args.feature_importance
                     estim['_'.join(file.split('_')[1:])].module.threshold = args.threshold
 
-                    r2_ground_truth, r2_no_treatment = test_scgen(adata,
-                                                                  estim['_'.join(file.split('_')[1:])],
+                    r2_ground_truth, r2_no_treatment = test_scgen(adata=adata,
+                                                                  model=estim['_'.join(file.split('_')[1:])],
+                                                                  labels=labels,
                                                                   example_pert='KLF1')
                     print('MODEL {}\n\nR2 GROUND TRUTH:\n{}\nR2 NO TREATMENT:\n{}\n'.format(file.split('_')[1:],
                                                                                             r2_ground_truth,

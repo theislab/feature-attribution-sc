@@ -7,6 +7,19 @@ import torch
 import anndata as ad
 from feature_attribution_sc.explainers.mask import apply_mask
 
+
+def int_to_str_map(y, labels):
+    """
+    The inference step of SCANVI provides the labels (perturbations, cell type) as an integer. The masking method
+    requires these labels as strings of the perturbation or cell type, as the importance mapping may shuffle them.
+    This method maps the integer labels to string labels.
+    :param y: int labels of batch
+    :param labels: all str labels
+    :return: str labels of batch
+    """
+    return [labels[i] for i in y.tolist()]
+
+
 class SCGENVAECustom(scgen.SCGENVAE):
     """
     This class inherits the original SCGENVAE class and overwrites the initialization, inference, and get inference
@@ -27,6 +40,7 @@ class SCGENVAECustom(scgen.SCGENVAE):
             use_batch_norm: Literal["encoder", "decoder", "none", "both"] = "both",
             use_layer_norm: Literal["encoder", "decoder", "none", "both"] = "none",
             kl_weight: float = 0.00005,
+            labels=None
     ):
         super(scgen.SCGENVAE, self).__init__()
         self.n_layers = n_layers
@@ -62,6 +76,7 @@ class SCGENVAECustom(scgen.SCGENVAE):
 
         self.feature_importance = feature_importance
         self.threshold = threshold
+        self.labels = labels
 
     def inference(self, x, y):
         """
@@ -70,7 +85,8 @@ class SCGENVAECustom(scgen.SCGENVAE):
         """
         # x = input_dict['x']
         # y = input_dict['y']
-        x_masked = apply_mask(x, y, self.feature_importance, self.threshold)
+        y_mapped = int_to_str_map(y, self.labels)
+        x_masked = apply_mask(x, y_mapped, self.feature_importance, self.threshold)
         qz_m, qz_v, z = self.z_encoder(x_masked)
 
         outputs = dict(z=z, qz_m=qz_m, qz_v=qz_v)
@@ -104,6 +120,8 @@ class SCGENCustom(scgen.SCGEN):
     ):
         super(scgen.SCGEN, self).__init__(adata)
 
+        labels = self.adata_manager.get_state_registry(REGISTRY_KEYS.LABELS_KEY)['categorical_mapping']
+
         self.module = SCGENVAECustom(
             n_input=self.summary_stats.n_vars,
             n_hidden=n_hidden,
@@ -112,6 +130,7 @@ class SCGENCustom(scgen.SCGEN):
             dropout_rate=dropout_rate,
             feature_importance=feature_importance,
             threshold=threshold,
+            labels=labels,
             **model_kwargs,
         )
         self._model_summary_string = (
