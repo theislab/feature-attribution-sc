@@ -8,17 +8,10 @@ def hlca_markers():
     -------
     A dictionary of form {cell_type: [marker genes]}
     """
-    marker_df = pd.read_csv('/home/icb/yuge.ji/projects/HLCA_reproducibility/notebooks/3_atlas_extension/markergenes.csv', index_col=0)
+    df = pd.read_csv('/home/icb/yuge.ji/projects/feature-attribution-sc/datasets/hlca_marker_dict.csv')
     hlca_hvgs = pd.read_csv('datasets/hlca_hvgs.csv').gene_symbols.values
 
-    marker_dict = {}
-    for i in range(0, marker_df.shape[1], 3):
-        ct = marker_df.columns[i].split('_')[0]
-        query_res = marker_df[[c for c in marker_df.columns if ct in c]][[f'{ct}_marker', f'{ct}_marker_for']].dropna().values
-        for value, key in query_res:
-            k = '('.join((key+' ').split('(')[:-1])[:-1]  # TODO: major hack for now, fix later
-            marker_dict.setdefault(k, []).append(value)
-    
+    marker_dict = {c:list(df[c].dropna().values) for c in df.columns}
     # remove markers if not in adata due to HVG subsetting. Remaining: 105/150
     # this causes some cell types to have no genes
     to_remove = []
