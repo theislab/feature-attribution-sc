@@ -19,7 +19,22 @@ maintainers = [
 urls.Documentation = "https://feature-attribution.readthedocs.io/"
 urls.Source = "https://github.com/yugeji/feature-attribution"
 urls.Home-page = "https://github.com/yugeji/feature-attribution"
-dependencies = ["anndata"]
+dependencies = [
+                "numpy>=1.14.0",
+                "scipy",
+                "pandas",
+                "statsmodels",
+                "anndata",
+                "seaborn",
+                "matplotlib",
+                "gprofiler-official",
+                "torch",
+                "scikit-learn",
+                "scgen",
+                "scvi-tools",
+                "scanpy",
+                "pytorch-lightning",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -33,6 +48,7 @@ doc = [
     "myst-parser",
     "sphinxcontrib-bibtex>=1.0.0",
     "scanpydoc[typehints]>=0.7.4",
+
     # For notebooks
     "nbsphinx",
     "ipykernel"
