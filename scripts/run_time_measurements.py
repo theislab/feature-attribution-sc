@@ -1,4 +1,5 @@
 import functools
+import time
 from typing import Callable
 
 import torch
