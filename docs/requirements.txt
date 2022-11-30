@@ -15,4 +15,4 @@ sphinx-remove-toctrees
 sphinx-design
 sphinxext-opengraph
 scanpydoc
--r ../requirements.txt
+..
