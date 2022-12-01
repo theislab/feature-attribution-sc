@@ -9,6 +9,7 @@
 api.md
 changelog.md
 developer_docs.md
+runtime.md
 references.md
 
 notebooks/example
