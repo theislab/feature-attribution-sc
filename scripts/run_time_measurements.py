@@ -1,11 +1,40 @@
 import functools
 import time
-from typing import Callable
+from typing import Callable, Literal
 
+from rich import print
 import torch
 
 
-def calculate_runtime(device: str, fct: Callable, profiler: bool = False, **kwargs):
+def calculate_cpu_runtime(fct: Callable) -> float:
+    """Determines the CPU runtime of any function.
+
+    Does not take GPU runtime into account.
+
+    Args:
+        fct (Callable): The training or prediction function to determine the runtime for.
+
+    Returns:
+        float: The runtime in seconds.
+    """
+    start_time = time.time()
+    fct()
+    elapsed_time = (time.time() - start_time) * 1000
+
+    return elapsed_time
+
+
+def calculate_runtime_pytorch(fct: Callable, device: Literal["cpu", "cuda"], profiler: bool = False, **kwargs):
+    """Determines the runtime of PyTorch functions.
+
+    Note the difference between self cpu/cuda time and cpu/cuda time - operators can call other operators,
+    self cpu/cuda time excludes time spent in children operator calls, while total cpu/cuda time includes it.
+
+    Args:
+        fct (Callable): The training or prediction function to determine the runtime for.
+        device (str): The device to profile. One of "cpu" or "cuda" (GPUs).
+        profiler (bool, optional): Whether to profile using the PyTorch profiler. Defaults to False.
+    """
     cuda_enabled = True if device == "cuda" else False
 
     if profiler:
@@ -13,13 +42,10 @@ def calculate_runtime(device: str, fct: Callable, profiler: bool = False, **kwar
             fct()
 
         print(prof.key_averages().table(sort_by="self_cpu_time_total"))
-        print(f"Total average CPU runtime: {prof.total_average().cpu_time}")
-        print(f"Total average GPU runtime: {prof.total_average().gpu_time}")
+        print(f"[bold blue]Total average CPU runtime: {(prof.total_average().cpu_time / 1000) :.3f} seconds")
+        print(f"[bold blue]Total average GPU runtime: {(prof.total_average().cuda_time / 1000):.3f} seconds")
     elif not cuda_enabled:  # CPU without profiler
-        start_time = time.time()
-        fct()
-        elapsed_time = (time.time() - start_time) * 1000
-        print(f"Total average CPU runtime: {elapsed_time}")
+        print(f"[bold blue]Total average CPU runtime: {(calculate_cpu_runtime(fct) / 1000):.3f} seconds")
     else:  # GPU without profiler
         start = torch.cuda.Event(enable_timing=True)
         end = torch.cuda.Event(enable_timing=True)
@@ -29,38 +55,4 @@ def calculate_runtime(device: str, fct: Callable, profiler: bool = False, **kwar
         end.record()
 
         torch.cuda.synchronize()
-        print(f"Total average GPU runtime: {start.elapsed_time(end) / 1000}")
-
-
-def calculate_runtime_dec(device: str, profiler: bool, **kwargs):
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            cuda_enabled = True if device == "cuda" else False
-
-            if profiler:
-                with torch.autograd.profiler.profile(use_cuda=cuda_enabled, **kwargs) as prof:
-                    func(*args, **kwargs)
-
-                print(prof.key_averages().table(sort_by="self_cpu_time_total"))
-                print(f"Total average CPU runtime: {prof.total_average().cpu_time}")
-                print(f"Total average GPU runtime: {prof.total_average().gpu_time}")
-            elif not cuda_enabled:  # CPU without profiler
-                start_time = time.time()
-                func(*args, **kwargs)
-                elapsed_time = (time.time() - start_time) * 1000
-                print(f"Total average CPU runtime: {elapsed_time}")
-            else:  # GPU without profiler
-                start = torch.cuda.Event(enable_timing=True)
-                end = torch.cuda.Event(enable_timing=True)
-
-                start.record()
-                func(*args, **kwargs)
-                end.record()
-
-                torch.cuda.synchronize()
-                print(f"Total average GPU runtime: {start.elapsed_time(end) / 1000}")
-
-        return wrapper
-
-    return decorator
+        print(f"[bold blue]Total average GPU runtime: {start.elapsed_time(end) / 1000:.3f}")

@@ -132,3 +132,5 @@ dmypy.json
 datasets
 models
 *.DS_Store
+
+**/data/

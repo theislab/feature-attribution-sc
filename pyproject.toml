@@ -34,6 +34,7 @@ dependencies = [
                 "scvi-tools",
                 "scanpy",
                 "pytorch-lightning",
+                "rich",
 ]
 
 [project.optional-dependencies]
