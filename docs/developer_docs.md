@@ -14,12 +14,12 @@ We recommend using [readthedocs.org][] (RTD) to build and host the documentation
 To enable readthedocs, head over to [their webiste][readthedocs.org] and sign in with your GitHub account.
 On the RTD dashboard choose "Import a Project" and follow the instructions to add your repository.
 
--   Make sure to choose the correct name of the default branch. On GitHub, the default name of the default branch has
-    recently changed from `master` to `main`.
--   We recommend to enable documentation builds for pull requests (PRs). This ensures that a PR doesn't introduce changes
-    that break the documentation. To do so, got to `Admin -> Advanced Settings`, check the
-    `Build pull requests for this projects` option, and click `Save`. For more information, please refer to
-    the [official RTD documentation](https://docs.readthedocs.io/en/stable/pull-requests.html).
+- Make sure to choose the correct name of the default branch. On GitHub, the default name of the default branch has
+  recently changed from `master` to `main`.
+- We recommend to enable documentation builds for pull requests (PRs). This ensures that a PR doesn't introduce changes
+  that break the documentation. To do so, got to `Admin -> Advanced Settings`, check the
+  `Build pull requests for this projects` option, and click `Save`. For more information, please refer to
+  the [official RTD documentation](https://docs.readthedocs.io/en/stable/pull-requests.html).
 
 ### Coverage tests with _Codecov_
 
@@ -55,60 +55,60 @@ Once authorized, pre-commit.ci should automatically be activated.
 
 The following pre-commit checks are for code style and format:
 
--   [black](https://black.readthedocs.io/en/stable/): standard code
-    formatter in Python.
--   [isort](https://pycqa.github.io/isort/): sort module imports into
-    sections and types.
--   [prettier](https://prettier.io/docs/en/index.html): standard code
-    formatter for non-Python files (e.g. YAML).
--   [blacken-docs](https://github.com/asottile/blacken-docs): black on
-    python code in docs.
+- [black](https://black.readthedocs.io/en/stable/): standard code
+  formatter in Python.
+- [isort](https://pycqa.github.io/isort/): sort module imports into
+  sections and types.
+- [prettier](https://prettier.io/docs/en/index.html): standard code
+  formatter for non-Python files (e.g. YAML).
+- [blacken-docs](https://github.com/asottile/blacken-docs): black on
+  python code in docs.
 
 The following pre-commit checks are for errors and inconsistencies:
 
--   [flake8](https://flake8.pycqa.org/en/latest/): standard check for errors in Python files.
-    -   [flake8-tidy-imports](https://github.com/adamchainz/flake8-tidy-imports):
-        tidy module imports.
-    -   [flake8-docstrings](https://github.com/PyCQA/flake8-docstrings):
-        pydocstyle extension of flake8.
-    -   [flake8-rst-docstrings](https://github.com/peterjc/e8-rst-docstrings):
-        extension of `flake8-docstrings` for `rst` docs.
-    -   [flake8-comprehensions](https://github.com/adamchainz/e8-comprehensions):
-        write better list/set/dict comprehensions.
-    -   [flake8-bugbear](https://github.com/PyCQA/flake8-bugbear):
-        find possible bugs and design issues in program.
-    -   [flake8-blind-except](https://github.com/elijahandrews/flake8-blind-except):
-        checks for blind, catch-all `except` statements.
--   [yesqa](https://github.com/asottile/yesqa):
-    remove unneccesary `# noqa` comments, follows additional dependencies listed above.
--   [autoflake](https://github.com/PyCQA/autoflake):
-    remove unused imports and variables.
--   [pre-commit-hooks](https://github.com/pre-commit/pre-commit-hooks): generic pre-commit hooks.
-    -   **detect-private-key**: checks for the existence of private keys.
-    -   **check-ast**: check whether files parse as valid python.
-    -   **end-of-file-fixer**:check files end in a newline and only a newline.
-    -   **mixed-line-ending**: checks mixed line ending.
-    -   **trailing-whitespace**: trims trailing whitespace.
-    -   **check-case-conflict**: check files that would conflict with case-insensitive file systems.
--   [pyupgrade](https://github.com/asottile/pyupgrade):
-    upgrade syntax for newer versions of the language.
+- [flake8](https://flake8.pycqa.org/en/latest/): standard check for errors in Python files.
+  - [flake8-tidy-imports](https://github.com/adamchainz/flake8-tidy-imports):
+    tidy module imports.
+  - [flake8-docstrings](https://github.com/PyCQA/flake8-docstrings):
+    pydocstyle extension of flake8.
+  - [flake8-rst-docstrings](https://github.com/peterjc/e8-rst-docstrings):
+    extension of `flake8-docstrings` for `rst` docs.
+  - [flake8-comprehensions](https://github.com/adamchainz/e8-comprehensions):
+    write better list/set/dict comprehensions.
+  - [flake8-bugbear](https://github.com/PyCQA/flake8-bugbear):
+    find possible bugs and design issues in program.
+  - [flake8-blind-except](https://github.com/elijahandrews/flake8-blind-except):
+    checks for blind, catch-all `except` statements.
+- [yesqa](https://github.com/asottile/yesqa):
+  remove unneccesary `# noqa` comments, follows additional dependencies listed above.
+- [autoflake](https://github.com/PyCQA/autoflake):
+  remove unused imports and variables.
+- [pre-commit-hooks](https://github.com/pre-commit/pre-commit-hooks): generic pre-commit hooks.
+  - **detect-private-key**: checks for the existence of private keys.
+  - **check-ast**: check whether files parse as valid python.
+  - **end-of-file-fixer**:check files end in a newline and only a newline.
+  - **mixed-line-ending**: checks mixed line ending.
+  - **trailing-whitespace**: trims trailing whitespace.
+  - **check-case-conflict**: check files that would conflict with case-insensitive file systems.
+- [pyupgrade](https://github.com/asottile/pyupgrade):
+  upgrade syntax for newer versions of the language.
 
 #### Notes on pre-commit checks
 
--   To ignore lint warnigs from **flake8**, see [Ignore certain lint warnings](#ignore-certain-lint-warnings).
--   You can add or remove pre-commit checks by simply deleting relevant lines in the `.pre-commit-config.yaml` file.
-    Some pre-commit checks have additional options that can be specified either in the `pyproject.toml` or tool-specific
-    config files, such as `.prettierrc.yml` for **prettier** and `.flake8` for **flake8**.
+- To ignore lint warnigs from **flake8**, see [Ignore certain lint warnings](#ignore-certain-lint-warnings).
+- You can add or remove pre-commit checks by simply deleting relevant lines in the `.pre-commit-config.yaml` file.
+  Some pre-commit checks have additional options that can be specified either in the `pyproject.toml` or tool-specific
+  config files, such as `.prettierrc.yml` for **prettier** and `.flake8` for **flake8**.
 
 ### API design
 
 Scverse ecosystem packages should operate on [AnnData][] and/or [MuData][] datastructures and typically use an API
 as originally [introduced by scanpy][scanpy-api] with the following submodules:
 
--   `pp` for preprocessing
--   `tl` for tools (that, compared to `pp` generate interpretable output, often associated with a corresponding plotting
-    function)
--   `pl` for plotting functions
+- `pp` for preprocessing
+- `tl` for tools (that, compared to `pp` generate interpretable output, often associated with a corresponding plotting
+  function)
+- `pl` for plotting functions
 
 You may add additional submodules as appropriate. While we encourage to follow a scanpy-like API for ecosystem packages,
 there may also be good reasons to choose a different approach, e.g. using an object-oriented API.
@@ -287,10 +287,10 @@ in the cookiecutter-scverse template.
 
 Please write documentation for your package. This project uses [sphinx][] with the following features:
 
--   the [myst][] extension allows to write documentation in markdown/Markedly Structured Text
--   [Numpy-style docstrings][numpydoc] (through the [napoloen][numpydoc-napoleon] extension).
--   Jupyter notebooks as tutorials through [nbsphinx][] (See [Tutorials with nbsphinx](#tutorials-with-nbsphinx-and-jupyter-notebooks))
--   [Sphinx autodoc typehints][], to automatically reference annotated input and output types
+- the [myst][] extension allows to write documentation in markdown/Markedly Structured Text
+- [Numpy-style docstrings][numpydoc] (through the [napoloen][numpydoc-napoleon] extension).
+- Jupyter notebooks as tutorials through [nbsphinx][] (See [Tutorials with nbsphinx](#tutorials-with-nbsphinx-and-jupyter-notebooks))
+- [Sphinx autodoc typehints][], to automatically reference annotated input and output types
 
 See the [scanpy developer docs](https://scanpy.readthedocs.io/en/latest/dev/documentation.html) for more information
 on how to write documentation.
@@ -309,10 +309,10 @@ repository.
 
 #### Hints
 
--   If you refer to objects from other packages, please add an entry to `intersphinx_mapping` in `docs/conf.py`. Only
-    if you do so can sphinx automatically create a link to the external documentation.
--   If building the documentation fails because of a missing link that is outside your control, you can add an entry to
-    the `nitpick_ignore` list in `docs/conf.py`
+- If you refer to objects from other packages, please add an entry to `intersphinx_mapping` in `docs/conf.py`. Only
+  if you do so can sphinx automatically create a link to the external documentation.
+- If building the documentation fails because of a missing link that is outside your control, you can add an entry to
+  the `nitpick_ignore` list in `docs/conf.py`
 
 #### Building the docs locally
 
