@@ -8,12 +8,13 @@
 import os
 import sys
 from datetime import datetime
-#from importlib.metadata import metadata
+
+# from importlib.metadata import metadata
 from pathlib import Path
 
 HERE = Path(__file__).parent
-#sys.path.insert(0, str(HERE / "extensions"))
-sys.path.insert(0, os.path.abspath('../'))
+# sys.path.insert(0, str(HERE / "extensions"))
+sys.path.insert(0, os.path.abspath("../"))
 
 # -- Project information -----------------------------------------------------
 
@@ -48,12 +49,12 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosummary",
+    "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
-#    "sphinxcontrib.bibtex",
-#    "sphinx_autodoc_typehints",
+    #    "sphinxcontrib.bibtex",
+    #    "sphinx_autodoc_typehints",
     "scanpydoc.definition_list_typed_field",
     "nbsphinx",
-    "sphinx.ext.mathjax",
     *[p.stem for p in (HERE / "extensions").glob("*.py")],
 ]
 
@@ -66,6 +67,11 @@ napoleon_include_init_with_doc = False
 napoleon_use_rtype = True  # having a separate entry generally helps readability
 napoleon_use_param = True
 myst_heading_anchors = 3  # create anchors for h1-h3
+myst_enable_extensions = [
+    "colon_fence",
+    "dollarmath",
+    "amsmath",
+]
 
 intersphinx_mapping = {
     "anndata": ("https://anndata.readthedocs.io/en/stable/", None),
