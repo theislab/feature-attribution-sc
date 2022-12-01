@@ -1,4 +1,4 @@
-# feature-attribution-
+# feature-attribution-sc
 
 This repository is a collection of scripts and notebooks that explore feature attribution (also known as feature importance) methods for single-cell specific deep-learning models.
 
