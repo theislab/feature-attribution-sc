@@ -7,7 +7,6 @@
 # -- Path setup --------------------------------------------------------------
 import os
 import sys
-from datetime import datetime
 
 # from importlib.metadata import metadata
 from pathlib import Path

@@ -1,31 +1,22 @@
-# pl packages
 import argparse
-import torch
-import pytorch_lightning as pl
-from pytorch_lightning.utilities.seed import seed_everything
-from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
-from pytorch_lightning.callbacks.early_stopping import EarlyStopping
-from pytorch_lightning.loggers import TensorBoardLogger
-
-# python packages
 import os
+import sys
+
+import pytorch_lightning as pl
+import scvi
+import torch
+from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
+from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.utilities.seed import seed_everything
+
+from feature_attribution_sc.data.get_data import get_hlca_data, get_scgen_data
+from feature_attribution_sc.inference.test_scgen import test_scgen
+from feature_attribution_sc.models.scgen_models import SCGENCustom
 
 os.chdir("../")
-import sys
 
 root = os.path.dirname(os.path.abspath(os.curdir))
 sys.path.append(root)
-import importlib
-
-# single cell packages
-import scvi
-import scanpy as sc
-import scgen
-
-# own packages
-from feature_attribution_sc.data.get_data import get_scgen_data, get_hlca_data
-from feature_attribution_sc.models.scgen_models import SCGENCustom
-from feature_attribution_sc.inference.test_scgen import test_scgen
 
 
 def parse_args():
@@ -101,7 +92,7 @@ if __name__ == "__main__":
         MODEL_DIR = "/home/icb/yuge.ji/projects/feature-attribution-sc"
 
     if args.mode == "train":
-        estim.train(
+        estim.train(  # noqa: F821
             enable_checkpointing=True,
             callbacks=[
                 checkpoint_callback,
@@ -111,8 +102,8 @@ if __name__ == "__main__":
             ],
             # resume_from_checkpoint=resume_from_checkpoint,
             check_val_every_n_epoch=1,
-            limit_train_batches=int(len(id_datamodule.idx_train) / args.batch_size),  # 1000,
-            limit_val_batches=int(len(id_datamodule.idx_val) / args.batch_size),  # 1000,
+            limit_train_batches=int(len(id_datamodule.idx_train) / args.batch_size),  # 1000,  # noqa: F821
+            limit_val_batches=int(len(id_datamodule.idx_val) / args.batch_size),  # 1000,  # noqa: F821
             logger=TensorBoardLogger(CHECKPOINT_PATH),  # TO DO: CHECK THE LOGGING IN SCVI
             gpus=1,
             num_sanity_val_steps=0,

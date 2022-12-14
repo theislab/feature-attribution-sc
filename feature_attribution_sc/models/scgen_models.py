@@ -1,17 +1,18 @@
+import anndata as ad
 import scgen
+import torch
+from scgen._base_components import DecoderSCGEN
 from scvi import REGISTRY_KEYS
 from scvi._compat import Literal
 from scvi.nn import Encoder
-from scgen._base_components import DecoderSCGEN
-import torch
-import anndata as ad
+
 from feature_attribution_sc.explainers.mask import apply_mask
 
 
 def int_to_str_map(y, labels):
-    """
-    The inference step of SCANVI provides the labels (perturbations, cell type) as an integer. The masking method
-    requires these labels as strings of the perturbation or cell type, as the importance mapping may shuffle them.
+    """The inference step of SCANVI provides the labels (perturbations, cell type) as an integer.
+
+    The masking method requires these labels as strings of the perturbation or cell type, as the importance mapping may shuffle them.
     This method maps the integer labels to string labels.
     :param y: int labels of batch
     :param labels: all str labels
@@ -21,9 +22,9 @@ def int_to_str_map(y, labels):
 
 
 class SCGENVAECustom(scgen.SCGENVAE):
-    """
-    This class inherits the original SCGENVAE class and overwrites the initialization, inference, and get inference
-    input functions. Feature importance and thresholds are passed to the inference step, which calls the application
+    """This class inherits the original SCGENVAE class and overwrites the initialization, inference, and get inference input functions.
+
+    Feature importance and thresholds are passed to the inference step, which calls the application
     of the mask, and now passes a masked datapoint.
     """
 
@@ -80,8 +81,8 @@ class SCGENVAECustom(scgen.SCGENVAE):
         self.labels = labels
 
     def inference(self, x, y):
-        """
-        High level inference method.
+        """High level inference method.
+
         Runs the inference (encoder) model.
         """
         # x = input_dict['x']
@@ -101,9 +102,9 @@ class SCGENVAECustom(scgen.SCGENVAE):
 
 
 class SCGENCustom(scgen.SCGEN):
-    """
-    This class inherits the original SCGEN class and overwrites the initialization. This only adds feature inportance
-    and threshold to the initialization and passes them to the VAE.
+    """This class inherits the original SCGEN class and overwrites the initialization.
+
+    This only adds feature inportance and threshold to the initialization and passes them to the VAE.
     """
 
     def __init__(

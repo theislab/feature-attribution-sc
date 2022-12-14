@@ -1,9 +1,8 @@
-import functools
 import time
 from typing import Callable, Literal
 
-from rich import print
 import torch
+from rich import print
 
 
 def calculate_cpu_runtime(fct: Callable) -> float:
