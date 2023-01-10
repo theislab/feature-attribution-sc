@@ -130,7 +130,4 @@ dmypy.json
 
 .idea
 datasets
-models
 *.DS_Store
-
-**/data/
