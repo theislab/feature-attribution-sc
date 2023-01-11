@@ -1,4 +1,3 @@
-import functools
 import time
 from typing import Callable, Literal
 

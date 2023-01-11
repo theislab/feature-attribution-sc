@@ -307,16 +307,4 @@ You see that in `top_ranking_data`, we have the 5 of 10 genes we want to mask - 
 2. For each element i, x_i should have the 10 genes and y_i should indicate the perturbation, that is a str
 3. The mask() function should then mask 50% of the 10 genes in x_i according to the ranking that is found from the generate_rankings() functions and specified with the perturbation of y_i
 Can you update the functions for that purpose?
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 '''
