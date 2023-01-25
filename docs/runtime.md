@@ -17,7 +17,7 @@ The general approach of feature ablation can be summarized as follows:
 
 Reference: https://www.samueltaylor.org/articles/feature-importance-for-any-model.html
 
-The complexity of feature ablation is henceforth: O(n * m²) where n == number of observations and m == number of features
+The complexity of feature ablation is henceforth: O(n \* m²) where n == number of observations and m == number of features
 
 ## Permutation FA
 
@@ -25,7 +25,7 @@ Permutation feature importance measures the increase in the prediction error of 
 
 Reference: https://christophm.github.io/interpretable-ml-book/feature-importance.html
 
-The complexity of permutation feature attribution is therefore: O(n * m²) where n == number of observations and m == number of features
+The complexity of permutation feature attribution is therefore: O(n \* m²) where n == number of observations and m == number of features
 
 ## SHAP
 
@@ -47,7 +47,7 @@ Local surrogate models are interpretable models that are used to explain individ
 
 Reference: https://christophm.github.io/interpretable-ml-book/lime.html
 
-The model complexity of LIME is O(n * m * z) where n == number of observations, m == number of features, z == complexity of surrogate model
+The model complexity of LIME is O(n _ m _ z) where n == number of observations, m == number of features, z == complexity of surrogate model
 
 ## Integrated gradients
 
@@ -58,16 +58,14 @@ The determination of feature attribution using integrated gradients relies on tw
 
 Reference: https://databasecamp.de/en/ml/integrated-gradients-nlp
 
-The complexity of 
+The complexity of
 O(????)
-
 
 ## Expected gradients
 
 Similar to **Integrated Gradients**, but samples baseline values from data instead of fixing one value.
 
 O(????)
-
 
 ## Example models, example runtime measurements and expected runtime
 

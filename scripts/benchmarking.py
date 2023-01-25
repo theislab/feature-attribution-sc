@@ -48,8 +48,7 @@ def roc_auc_hlca(ranking):
 
 def roc_auc_crispr(ranking):
     """
-    Calculate roc_auc for a CRISPR dataset where the source of ground
-    truth is the sgRNA of the condition.
+    Calculate roc_auc for a CRISPR dataset where the source of ground truth is the sgRNA of the condition.
 
     Params
     ------

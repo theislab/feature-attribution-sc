@@ -1,18 +1,20 @@
+import anndata as ad
 import scgen
+import torch
+from scgen._base_components import DecoderSCGEN
 from scvi import REGISTRY_KEYS
 from scvi._compat import Literal
 from scvi.nn import Encoder
-from scgen._base_components import DecoderSCGEN
-import torch
-import anndata as ad
+
 from feature_attribution_sc.explainers.mask import mask
 
 
 def int_to_str_map(y, labels):
-    """
-    The inference step of SCANVI provides the labels (perturbations, cell type) as an integer. The masking method
-    requires these labels as strings of the perturbation or cell type, as the importance mapping may shuffle them.
+    """The inference step of SCANVI provides the labels (perturbations, cell type) as an integer.
+
+    The masking method requires these labels as strings of the perturbation or cell type, as the importance mapping may shuffle them.
     This method maps the integer labels to string labels.
+
     :param y: int labels of batch
     :param labels: all str labels
     :return: str labels of batch
@@ -25,26 +27,27 @@ def int_to_str_map(y, labels):
 
 
 class SCGENVAECustom(scgen.SCGENVAE):
-    """
-    This class inherits the original SCGENVAE class and overwrites the initialization, inference, and get inference
-    input functions. Feature importance and thresholds are passed to the inference step, which calls the application
+    """This class inherits the original SCGENVAE class and overwrites the initialization, inference, and get inference input functions.
+
+    Feature importance and thresholds are passed to the inference step, which calls the application
     of the mask, and now passes a masked datapoint.
     """
+
     def __init__(
-            self,
-            n_input: int,
-            feature_importance: str,
-            threshold: float,
-            n_hidden: int = 800,
-            n_latent: int = 10,
-            n_layers: int = 2,
-            dropout_rate: float = 0.1,
-            log_variational: bool = False,
-            latent_distribution: str = "normal",
-            use_batch_norm: Literal["encoder", "decoder", "none", "both"] = "both",
-            use_layer_norm: Literal["encoder", "decoder", "none", "both"] = "none",
-            kl_weight: float = 0.00005,
-            labels=None
+        self,
+        n_input: int,
+        feature_importance: str,
+        threshold: float,
+        n_hidden: int = 800,
+        n_latent: int = 10,
+        n_layers: int = 2,
+        dropout_rate: float = 0.1,
+        log_variational: bool = False,
+        latent_distribution: str = "normal",
+        use_batch_norm: Literal["encoder", "decoder", "none", "both"] = "both",
+        use_layer_norm: Literal["encoder", "decoder", "none", "both"] = "none",
+        kl_weight: float = 0.00005,
+        labels=None,
     ):
         super(scgen.SCGENVAE, self).__init__()
         self.n_layers = n_layers
@@ -83,13 +86,13 @@ class SCGENVAECustom(scgen.SCGENVAE):
         self.labels = labels
 
     def inference(self, x, y):
-        """
-        High level inference method.
+        """High level inference method.
+
         Runs the inference (encoder) model.
         """
         # x = input_dict['x']
         # y = input_dict['y']
-        if self.feature_importance == 'random':
+        if self.feature_importance == "random":
             y_mapped = y
         else:
             y_mapped = int_to_str_map(y, self.labels)
@@ -103,32 +106,30 @@ class SCGENVAECustom(scgen.SCGENVAE):
     def _get_inference_input(self, tensors):
         x = tensors[REGISTRY_KEYS.X_KEY]
         y = tensors[REGISTRY_KEYS.LABELS_KEY]
-        input_dict = dict(
-            x=x,
-            y=y
-        )
+        input_dict = dict(x=x, y=y)
         return input_dict
 
 
 class SCGENCustom(scgen.SCGEN):
+    """This class inherits the original SCGEN class and overwrites the initialization.
+
+    This only adds feature importance and threshold to the initialization and passes them to the VAE.
     """
-    This class inherits the original SCGEN class and overwrites the initialization. This only adds feature importance
-    and threshold to the initialization and passes them to the VAE.
-    """
+
     def __init__(
-            self,
-            adata: ad.AnnData,
-            n_hidden: int = 800,
-            n_latent: int = 100,
-            n_layers: int = 2,
-            dropout_rate: float = 0.2,
-            feature_importance=None,  # str,
-            threshold=None,  #  float,
-            **model_kwargs,
+        self,
+        adata: ad.AnnData,
+        n_hidden: int = 800,
+        n_latent: int = 100,
+        n_layers: int = 2,
+        dropout_rate: float = 0.2,
+        feature_importance=None,  # str,
+        threshold=None,  #  float,
+        **model_kwargs,
     ):
         super(scgen.SCGEN, self).__init__(adata)
 
-        labels = self.adata_manager.get_state_registry(REGISTRY_KEYS.LABELS_KEY)['categorical_mapping']
+        labels = self.adata_manager.get_state_registry(REGISTRY_KEYS.LABELS_KEY)["categorical_mapping"]
 
         self.module = SCGENVAECustom(
             n_input=self.summary_stats.n_vars,
@@ -142,8 +143,7 @@ class SCGENCustom(scgen.SCGEN):
             **model_kwargs,
         )
         self._model_summary_string = (
-            "SCGEN Model with the following params: \nn_hidden: {}, n_latent: {}, n_layers: {}, dropout_rate: "
-            "{}"
+            "SCGEN Model with the following params: \nn_hidden: {}, n_latent: {}, n_layers: {}, dropout_rate: " "{}"
         ).format(
             n_hidden,
             n_latent,
