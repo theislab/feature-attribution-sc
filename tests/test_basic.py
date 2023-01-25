@@ -1,9 +1,9 @@
-import feature_attribution
+import feature_attribution_sc
 import pytest
 
 
 def test_package_has_version():
-    feature_attribution.__version__
+    feature_attribution_sc.__version__
 
 
 @pytest.mark.skip(reason="This decorator should be removed when test passes.")
