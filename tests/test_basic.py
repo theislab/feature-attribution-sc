@@ -1,6 +1,5 @@
-import pytest
-
 import feature_attribution
+import pytest
 
 
 def test_package_has_version():

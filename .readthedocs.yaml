@@ -1,17 +1,17 @@
 version: 2
 
 sphinx:
-    configuration: docs/conf.py
+  configuration: docs/conf.py
 
 formats: all
 
 python:
-    version: 3.9
-    install:
-        - method: pip
-          path: .
-          extra_requirements:
-            - doc
+  version: 3.9
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - doc
 
 submodules:
-    include: all
+  include: all

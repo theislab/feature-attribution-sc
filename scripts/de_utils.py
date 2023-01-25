@@ -1,11 +1,7 @@
-"""
-Do you think this is gonna show up on RTD?
-"""
-import pandas as pd
 from gprofiler import GProfiler
 
 
-def enrich(query, background, return_full=False, organism="hsapiens", sources=["GO:BP"]):
+def enrich(query, background, return_full=False, organism="hsapiens", sources=["GO:BP"]):  # noqa: B006
     gp = GProfiler(return_dataframe=True, user_agent="g:GOSt")
 
     df = gp.profile(
@@ -24,13 +20,14 @@ def enrich(query, background, return_full=False, organism="hsapiens", sources=["
         return df[["name", "p_value", "intersections"]]
 
 
-import scipy
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy
 
 
 def plot_correlation(df, col1, col2, margin_thresh=30, expression_thresh=25, plot_legend=False):
     """Scatterplot of two columns of a dataframe containing scores or pvalues.
+
     Points with significant correlation are colored in blue.
 
     Params
@@ -54,10 +51,9 @@ def plot_correlation(df, col1, col2, margin_thresh=30, expression_thresh=25, plo
     -------
     A subset of the original dataframe containing only the highly correlated rows.
     """
-    from adjustText import adjust_text
 
     p_r2 = scipy.stats.pearsonr(df[col1], df[col2])
-    plt.scatter(df[col1], df[col2], c="grey", label="R2 = {:.2f}\n".format(p_r2[0]))
+    plt.scatter(df[col1], df[col2], c="grey", label=f"R2 = {p_r2[0]:.2f}\n")
 
     # calculate high correlation points
     df["margin"] = np.abs(df[col1] - df[col2])

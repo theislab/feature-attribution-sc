@@ -1,31 +1,34 @@
-import torch
-import scvi
-import pandas as pd
+from typing import Dict, List, Tuple
+
 import numpy as np
-from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Tuple
+import pandas as pd
 
 
 def generate_rankings(df: pd.DataFrame) -> Dict[str, List[Tuple[str, int]]]:
-    """
-    Generate a dictionary that maps each perturbation to a list of tuples where each tuple consists of
-    a gene symbol and its ranking for the perturbation.
+    """Generate a dictionary that maps each perturbation to a list of tuples where each tuple consists of a gene symbol and its ranking for the perturbation.
+
     :param df: DataFrame with gene symbols as rows and perturbation names as columns with rankings as values
     :return: Dictionary that maps perturbation names to lists of (gene symbol, ranking) tuples
     """
     rankings = {}
     gene_indices = {}
-    for i, gene in enumerate(df['gene_symbols']):
+    for i, gene in enumerate(df["gene_symbols"]):
         gene_indices[gene] = i
     for col in df.columns[1:]:
-        rankings[col] = list(zip(df['gene_symbols'], df[col]))
+        rankings[col] = list(zip(df["gene_symbols"], df[col]))
         rankings[col].sort(key=lambda x: x[1])
     return rankings, gene_indices
 
 
-def mask(data: np.ndarray, labels: np.ndarray, rankings: Dict[str, List[Tuple[str, int]]], gene_indices: Dict[str, int], threshold: float) -> np.ndarray:
-    """
-    Mask a batch of data based on ranking data and a threshold.
+def mask(
+    data: np.ndarray,
+    labels: np.ndarray,
+    rankings: Dict[str, List[Tuple[str, int]]],
+    gene_indices: Dict[str, int],
+    threshold: float,
+) -> np.ndarray:
+    """Mask a batch of data based on ranking data and a threshold.
+
     :param data: Batch of data to be masked, N x M array
     :param labels: Batch of labels, N x 1 array
     :param rankings: Ranking data, Dict[label, ranking data]
@@ -42,7 +45,7 @@ def mask(data: np.ndarray, labels: np.ndarray, rankings: Dict[str, List[Tuple[st
         # Get the ranking data for the current label
         ranking = rankings[label]
         # Find the top threshold percent of the ranking data
-        top_ranking_data = ranking[:int(len(ranking) * threshold)]
+        top_ranking_data = ranking[: int(len(ranking) * threshold)]
         # Set the mask to zero for the top threshold percent of the ranking data
         mask = np.ones_like(data_point)
         for gene, _ in top_ranking_data:
@@ -52,8 +55,6 @@ def mask(data: np.ndarray, labels: np.ndarray, rankings: Dict[str, List[Tuple[st
         masked_data[i] = data_point * mask
     # Transpose the masked data back to have shape N x M
     return masked_data
-
-
 
 
 '''
@@ -192,10 +193,10 @@ def apply_mask(x: np.ndarray, y: List[str], pert_names: List[str], rankings: def
         masked_x.append(mask(data=data, pert_names=pert_names, rankings=rankings, labels=label, threshold=threshold))
 
     return masked_x
-    
-    
-    
-    
+
+
+
+
     I think there is a problem with the logic. This is your current code:
 
 def generate_rankings(df: pd.DataFrame) -> Dict[str, List[Tuple[str, int]]]:
