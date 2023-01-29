@@ -1,8 +1,8 @@
 name: fa_base
 
 channels:
-   - bioconda
-   - conda-forge
+  - bioconda
+  - conda-forge
 dependencies:
    - conda-forge::python==3.8.2
    - conda-forge::r-statmod==1.4.37

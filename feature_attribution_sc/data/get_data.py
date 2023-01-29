@@ -1,16 +1,18 @@
 # from Sergei's https://github.com/theislab/feature-attribution-sc/blob/main/notebooks/train_scgen.ipynb
 
-import scvi
+import os
+
+import numpy as np
+import pandas as pd
 import scanpy as sc
 import scgen
-import os
-import pandas as pd
-import numpy as np
+import scvi
 
 
 def get_scgen_data(batch_size, data_path="/home/icb/yuge.ji/projects/feature-attribution-sc"):
     """
     Receive the adata object given a path to the corresponding .h5ad file
+
     :param batch_size: batch size of the SCGEN model
     :param data_path: PATH where the .h5ad file is located
     :return:
@@ -20,9 +22,12 @@ def get_scgen_data(batch_size, data_path="/home/icb/yuge.ji/projects/feature-att
     for file in os.listdir(f"{data_path}/models"):
         if "scgen" in file:
             print("loading", file)
-            models["_".join(file.split("_")[1:])] = scgen.SCGEN.load(f"{data_path}/models/{file}", adata=adata)
+            try:
+                models["_".join(file.split("_")[1:])] = scgen.SCGEN.load(f"{data_path}/models/{file}", adata=adata)
+            except ValueError:
+                print("Could not load the last file, continue without it")
 
-    indices = np.random.choice(adata.n_obs, size=100, replace=False)
+    # indices = np.random.choice(adata.n_obs, size=100, replace=False)
     # for model in models:
     #     dataloaders = model._make_data_loader(adata=adata, indices=indices, batch_size=batch_size)
     return None, adata
@@ -31,6 +36,7 @@ def get_scgen_data(batch_size, data_path="/home/icb/yuge.ji/projects/feature-att
 def get_hlca_data(batch_size):
     """
     Receive the PyTorch dataloader and adata object of the HLCA
+
     :param batch_size: batch size
     :return: dataloader, adata
     """

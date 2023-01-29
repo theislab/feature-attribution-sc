@@ -4,6 +4,7 @@ import scanpy as sc
 def test_scgen(adata, model, example_pert="KLF1"):
     """
     Test a given model on a subset of features, that were selected using a feature attribution method.
+
     :param adata: Adata object, underlying dataset with metadata for SCGEN method
     :param model: Trained SCGEN model
     :param example_pert: Example perturbation, required for the evaluation in SCGEN (see tutorial for more info)
@@ -13,9 +14,7 @@ def test_scgen(adata, model, example_pert="KLF1"):
     sc.tl.rank_genes_groups(ctrl_adata, groupby="perturbation_name", reference="control", method="wilcoxon")
 
     diff_genes = ctrl_adata.uns["rank_genes_groups"]["names"][example_pert]
-    print(
-        "Differentially expressed genes found in example perturbation {}: \n {}".format(example_pert, diff_genes[:10])
-    )
+    print(f"Differentially expressed genes found in example perturbation {example_pert}: \n {diff_genes[:10]}")
 
     pred, delta = model.predict(
         ctrl_key="control",

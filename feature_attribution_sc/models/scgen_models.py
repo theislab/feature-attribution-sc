@@ -1,29 +1,35 @@
+import anndata as ad
 import scgen
+import torch
+from scgen._base_components import DecoderSCGEN
 from scvi import REGISTRY_KEYS
 from scvi._compat import Literal
 from scvi.nn import Encoder
-from scgen._base_components import DecoderSCGEN
-import torch
-import anndata as ad
-from feature_attribution_sc.explainers.mask import apply_mask
+
+from feature_attribution_sc.explainers.mask import mask
 
 
 def int_to_str_map(y, labels):
-    """
-    The inference step of SCANVI provides the labels (perturbations, cell type) as an integer. The masking method
-    requires these labels as strings of the perturbation or cell type, as the importance mapping may shuffle them.
+    """The inference step of SCANVI provides the labels (perturbations, cell type) as an integer.
+
+    The masking method requires these labels as strings of the perturbation or cell type, as the importance mapping may shuffle them.
     This method maps the integer labels to string labels.
+
     :param y: int labels of batch
     :param labels: all str labels
     :return: str labels of batch
     """
-    return [labels[i] for i in y.tolist()]
+    try:
+        str_labels = [labels[i] for i in y.tolist()]
+    except IndexError:
+        str_labels = labels
+    return str_labels
 
 
 class SCGENVAECustom(scgen.SCGENVAE):
-    """
-    This class inherits the original SCGENVAE class and overwrites the initialization, inference, and get inference
-    input functions. Feature importance and thresholds are passed to the inference step, which calls the application
+    """This class inherits the original SCGENVAE class and overwrites the initialization, inference, and get inference input functions.
+
+    Feature importance and thresholds are passed to the inference step, which calls the application
     of the mask, and now passes a masked datapoint.
     """
 
@@ -80,14 +86,18 @@ class SCGENVAECustom(scgen.SCGENVAE):
         self.labels = labels
 
     def inference(self, x, y):
-        """
-        High level inference method.
+        """High level inference method.
+
         Runs the inference (encoder) model.
         """
         # x = input_dict['x']
         # y = input_dict['y']
-        y_mapped = int_to_str_map(y, self.labels)
-        x_masked = apply_mask(x, y_mapped, self.feature_importance, self.threshold)
+        if self.feature_importance == "random":
+            y_mapped = y
+        else:
+            y_mapped = int_to_str_map(y, self.labels)
+        # tbd: adapt for new mask method
+        x_masked = mask(x, y_mapped, self.feature_importance, self.threshold)
         qz_m, qz_v, z = self.z_encoder(x_masked)
 
         outputs = dict(z=z, qz_m=qz_m, qz_v=qz_v)
@@ -101,9 +111,9 @@ class SCGENVAECustom(scgen.SCGENVAE):
 
 
 class SCGENCustom(scgen.SCGEN):
-    """
-    This class inherits the original SCGEN class and overwrites the initialization. This only adds feature inportance
-    and threshold to the initialization and passes them to the VAE.
+    """This class inherits the original SCGEN class and overwrites the initialization.
+
+    This only adds feature importance and threshold to the initialization and passes them to the VAE.
     """
 
     def __init__(
