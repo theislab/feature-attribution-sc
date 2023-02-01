@@ -3,7 +3,7 @@ from copy import deepcopy
 import torch
 
 
-def neutral_input(scanvi_model, epochs=2000, batch_index=None, size_factor=None, **kwargs):
+def neutral_input(scanvi_model, epochs=2000, inpt=None, size_factor=None, batch_index=None, **kwargs):
     scanvi_model = deepcopy(scanvi_model)
     for param in scanvi_model.module.parameters():
         param.requires_grad = False
@@ -12,12 +12,15 @@ def neutral_input(scanvi_model, epochs=2000, batch_index=None, size_factor=None,
         batch_index = torch.tensor(batch_index, dtype=torch.float32, device=param.device).reshape((1, 1))
 
     n_vars = scanvi_model.summary_stats["n_vars"]
-    inpt = torch.ones((1, n_vars), device=param.device)
-    if size_factor is None:
-        inpt = inpt * 0.0
+    if inpt is None:
+        inpt = torch.ones((1, n_vars), device=param.device)
+        if size_factor is None:
+            inpt = inpt * 0.0
+        else:
+            inpt = inpt / n_vars
+            inpt = torch.distributions.Dirichlet(inpt).sample() * size_factor
     else:
-        inpt = inpt / n_vars
-        inpt = torch.distributions.Dirichlet(inpt).sample() * size_factor
+        inpt = torch.tensor(inpt, dtype=torch.float32, device=param.device)
     inpt.requires_grad = True
 
     optim = torch.optim.Adam(params=(inpt,), **kwargs)
