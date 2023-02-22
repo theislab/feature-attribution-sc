@@ -1,4 +1,7 @@
+import anndata as ad
 import scgen
+import torch
+from scgen._base_components import DecoderSCGEN
 from scvi import REGISTRY_KEYS
 from scvi._compat import Literal
 from scvi.nn import Encoder
@@ -10,10 +13,11 @@ from feature_attribution_sc.explainers.mask import mask, generate_rankings
 
 
 def int_to_str_map(y, labels):
-    """
-    The inference step of SCANVI provides the labels (perturbations, cell type) as an integer. The masking method
-    requires these labels as strings of the perturbation or cell type, as the importance mapping may shuffle them.
+    """The inference step of SCANVI provides the labels (perturbations, cell type) as an integer.
+
+    The masking method requires these labels as strings of the perturbation or cell type, as the importance mapping may shuffle them.
     This method maps the integer labels to string labels.
+
     :param y: int labels of batch
     :param labels: all str labels
     :return: str labels of batch
@@ -26,9 +30,9 @@ def int_to_str_map(y, labels):
 
 
 class SCGENVAECustom(scgen.SCGENVAE):
-    """
-    This class inherits the original SCGENVAE class and overwrites the initialization, inference, and get inference
-    input functions. Feature importance and thresholds are passed to the inference step, which calls the application
+    """This class inherits the original SCGENVAE class and overwrites the initialization, inference, and get inference input functions.
+
+    Feature importance and thresholds are passed to the inference step, which calls the application
     of the mask, and now passes a masked datapoint.
     """
 
@@ -89,8 +93,8 @@ class SCGENVAECustom(scgen.SCGENVAE):
         self.labels = labels
 
     def inference(self, x, y):
-        """
-        High level inference method.
+        """High level inference method.
+
         Runs the inference (encoder) model.
         """
         # Generate the rankings dictionary
@@ -112,14 +116,14 @@ class SCGENVAECustom(scgen.SCGENVAE):
     def _get_inference_input(self, tensors):
         x = tensors[REGISTRY_KEYS.X_KEY]
         y = tensors[REGISTRY_KEYS.LABELS_KEY]
-        input_dict = dict(
-            x=x,
-            y=y
-        )
+        input_dict = dict(x=x, y=y)
         return input_dict
 
 
 class SCGENCustom(scgen.SCGEN):
+    """This class inherits the original SCGEN class and overwrites the initialization.
+
+    This only adds feature importance and threshold to the initialization and passes them to the VAE.
     """
     This class inherits the original SCGEN class and overwrites the initialization. This only adds feature importance
     and threshold to the initialization and passes them to the VAE.
@@ -154,8 +158,7 @@ class SCGENCustom(scgen.SCGEN):
             **model_kwargs,
         )
         self._model_summary_string = (
-            "SCGEN Model with the following params: \nn_hidden: {}, n_latent: {}, n_layers: {}, dropout_rate: "
-            "{}"
+            "SCGEN Model with the following params: \nn_hidden: {}, n_latent: {}, n_layers: {}, dropout_rate: " "{}"
         ).format(
             n_hidden,
             n_latent,

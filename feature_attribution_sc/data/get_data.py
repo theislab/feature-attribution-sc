@@ -4,6 +4,10 @@ import scvi
 import scanpy as sc
 import pandas as pd
 import numpy as np
+import pandas as pd
+import scanpy as sc
+import scgen
+import scvi
 
 
 def get_hlca_data(batch_size,
