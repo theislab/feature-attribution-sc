@@ -43,4 +43,3 @@ def test_scgen(adata, model, example_pert='KLF1'):
         legend=False
     )
     return r2_value_ground_truth, r2_value_no_treatment
-
