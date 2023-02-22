@@ -3,9 +3,10 @@ from scvi import REGISTRY_KEYS
 from scvi._compat import Literal
 from scvi.nn import Encoder
 from scgen._base_components import DecoderSCGEN
+import pandas as pd
 import torch
 import anndata as ad
-from feature_attribution_sc.explainers.mask import mask
+from feature_attribution_sc.explainers.mask import mask, generate_rankings
 
 
 def int_to_str_map(y, labels):
@@ -30,11 +31,15 @@ class SCGENVAECustom(scgen.SCGENVAE):
     input functions. Feature importance and thresholds are passed to the inference step, which calls the application
     of the mask, and now passes a masked datapoint.
     """
+
     def __init__(
             self,
             n_input: int,
+            # add feature_importance, threshold, and selected_genes
             feature_importance: str,
             threshold: float,
+            selected_genes: pd.core.series.Series,
+            # rest are default scGEN parameters
             n_hidden: int = 800,
             n_latent: int = 10,
             n_layers: int = 2,
@@ -80,6 +85,7 @@ class SCGENVAECustom(scgen.SCGENVAE):
 
         self.feature_importance = feature_importance
         self.threshold = threshold
+        self.selected_genes = selected_genes
         self.labels = labels
 
     def inference(self, x, y):
@@ -87,14 +93,17 @@ class SCGENVAECustom(scgen.SCGENVAE):
         High level inference method.
         Runs the inference (encoder) model.
         """
-        # x = input_dict['x']
-        # y = input_dict['y']
-        if self.feature_importance == 'random':
-            y_mapped = y
-        else:
-            y_mapped = int_to_str_map(y, self.labels)
-        # tbd: adapt for new mask method
-        x_masked = mask(x, y_mapped, self.feature_importance, self.threshold)
+        # Generate the rankings dictionary
+        rankings, gene_indices = generate_rankings(self.feature_importance)
+
+        x_masked = mask(
+            data=x,
+            labels=y,
+            df=self.feature_importance,
+            rankings=rankings,
+            gene_indices=gene_indices,
+            threshold=self.threshold)
+        # x_masked = mask(x, y, self.feature_importance, self.threshold)
         qz_m, qz_v, z = self.z_encoder(x_masked)
 
         outputs = dict(z=z, qz_m=qz_m, qz_v=qz_v)
@@ -115,6 +124,7 @@ class SCGENCustom(scgen.SCGEN):
     This class inherits the original SCGEN class and overwrites the initialization. This only adds feature importance
     and threshold to the initialization and passes them to the VAE.
     """
+
     def __init__(
             self,
             adata: ad.AnnData,
@@ -123,13 +133,14 @@ class SCGENCustom(scgen.SCGEN):
             n_layers: int = 2,
             dropout_rate: float = 0.2,
             feature_importance=None,  # str,
-            threshold=None,  #  float,
+            threshold=None,  # float,
             **model_kwargs,
     ):
         super(scgen.SCGEN, self).__init__(adata)
 
-        labels = self.adata_manager.get_state_registry(REGISTRY_KEYS.LABELS_KEY)['categorical_mapping']
-
+        # labels = self.adata_manager.get_state_registry(REGISTRY_KEYS.LABELS_KEY)['categorical_mapping']
+        # labels = self.adata_manager.get_state_registry(REGISTRY_KEYS.LABELS_KEY)['original_key']
+        labels = self.adata_manager.registry['field_registries']['labels']['state_registry']['categorical_mapping']
         self.module = SCGENVAECustom(
             n_input=self.summary_stats.n_vars,
             n_hidden=n_hidden,
@@ -139,6 +150,7 @@ class SCGENCustom(scgen.SCGEN):
             feature_importance=feature_importance,
             threshold=threshold,
             labels=labels,
+            selected_genes=adata.var_names.tolist(),
             **model_kwargs,
         )
         self._model_summary_string = (
