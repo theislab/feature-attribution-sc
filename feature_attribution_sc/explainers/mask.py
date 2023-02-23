@@ -21,7 +21,7 @@ def generate_rankings(df: pd.DataFrame) -> Tuple[Dict[str, List[Tuple[str, int]]
     return rankings, gene_indices
 
 
-def mask_with_loop(data: np.ndarray,
+def mask(data: np.ndarray,
          labels: np.ndarray,
          df: pd.DataFrame,
          rankings: Dict[str, List[Tuple[str, int]]],
