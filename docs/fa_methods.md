@@ -46,7 +46,6 @@ The determination of feature attribution using integrated gradients relies on tw
 
 Reference: https://databasecamp.de/en/ml/integrated-gradients-nlp
 
-
 ## Expected gradients
 
 Similar to **Integrated Gradients**, but samples baseline values from data instead of fixing one value.

@@ -13,7 +13,7 @@ def generate_rankings(df: pd.DataFrame) -> Tuple[Dict[str, List[Tuple[str, int]]
     """
     rankings = {}
     gene_indices = {}
-    for i, gene in enumerate(df['gene_symbols']):
+    for i, gene in enumerate(df["gene_symbols"]):
         gene_indices[gene] = i
     for col in df.columns[1:]:
         rankings[col] = list(zip(df['gene_symbols'], df[col]))
