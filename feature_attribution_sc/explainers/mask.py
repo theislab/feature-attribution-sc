@@ -21,12 +21,12 @@ def generate_rankings(df: pd.DataFrame) -> Tuple[Dict[str, List[Tuple[str, int]]
     return rankings, gene_indices
 
 
-def mask(data: np.ndarray,
-         labels: np.ndarray,
+def mask(data: torch.tensor,
+         labels: torch.tensor,
          df: pd.DataFrame,
          rankings: Dict[str, List[Tuple[str, int]]],
          gene_indices: Dict[str, int],
-         threshold: float, ) -> np.ndarray:
+         threshold: float, ) -> torch.tensor:
     """
     Mask a batch of data based on ranking data and a threshold.
     This time we know that the genes in the ranking data are the same as the genes in the data points
@@ -38,7 +38,7 @@ def mask(data: np.ndarray,
     :param rankings: Ranking data, Dict[label, ranking data]
     :param gene_indices: Dictionary that maps gene names to indices in the data array
     :param threshold: Masking threshold
-    :return: Masked data, N x M array
+    :return: Masked data, N x M tensor
     """
     # Initialize masked data as a copy of the input data
     masked_data = np.copy(data)
