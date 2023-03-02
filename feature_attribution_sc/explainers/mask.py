@@ -11,6 +11,7 @@ def generate_rankings(df: pd.DataFrame, gene_col='gene_symbols') -> Tuple[Dict[s
     :param df: DataFrame with gene symbols as rows and perturbation names as columns with rankings as values
     :return: Dictionary that maps perturbation names to lists of (gene symbol, ranking) tuples
     """
+    print(f'Generating rankings for {df.shape[1]} labels and {df.shape[0]} features.')
     rankings = {}
     gene_indices = {}
     for i, gene in enumerate(df[gene_col]):
@@ -37,9 +38,11 @@ def mask(data: torch.tensor,
     :param df: DataFrame with gene symbols as rows and perturbation names as columns with rankings as values
     :param rankings: Ranking data, Dict[label, ranking data]
     :param gene_indices: Dictionary that maps gene names to indices in the data array
-    :param threshold: Masking threshold
+    :param threshold: Masking threshold, must be between 0 and 1
     :return: Masked data, N x M tensor
     """
+    if threshold > 1 or threshold < 0:
+        raise ValueError("Threshold must be passed as a fractional value.")
     # Initialize masked data as a copy of the input data
     masked_data = np.copy(data)
     # Loop over the rows of data_point and label
