@@ -4,7 +4,7 @@ import torch
 from typing import Dict, List, Tuple
 
 
-def generate_rankings(df: pd.DataFrame) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, int]]:
+def generate_rankings(df: pd.DataFrame, gene_col='gene_symbols') -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, int]]:
     """
     Generate a dictionary that maps each perturbation to a list of tuples where each tuple consists of
     a gene symbol and its ranking for the perturbation.
@@ -13,11 +13,11 @@ def generate_rankings(df: pd.DataFrame) -> Tuple[Dict[str, List[Tuple[str, int]]
     """
     rankings = {}
     gene_indices = {}
-    for i, gene in enumerate(df["gene_symbols"]):
+    for i, gene in enumerate(df[gene_col]):
         gene_indices[gene] = i
     for col in df.columns[1:]:
-        rankings[col] = list(zip(df['gene_symbols'], df[col]))
-    rankings[col].sort(key=lambda x: x[1])
+        rankings[col] = list(zip(df[gene_col], df[col]))
+        rankings[col].sort(key=lambda x: x[1], reverse=True)
     return rankings, gene_indices
 
 
