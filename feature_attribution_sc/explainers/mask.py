@@ -4,29 +4,30 @@ import torch
 from typing import Dict, List, Tuple
 
 
-def generate_rankings(df: pd.DataFrame) -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, int]]:
+def generate_rankings(df: pd.DataFrame, gene_col='gene_symbols') -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, int]]:
     """
     Generate a dictionary that maps each perturbation to a list of tuples where each tuple consists of
     a gene symbol and its ranking for the perturbation.
     :param df: DataFrame with gene symbols as rows and perturbation names as columns with rankings as values
     :return: Dictionary that maps perturbation names to lists of (gene symbol, ranking) tuples
     """
+    print(f'Generating rankings for {df.shape[1]} labels and {df.shape[0]} features.')
     rankings = {}
     gene_indices = {}
-    for i, gene in enumerate(df["gene_symbols"]):
+    for i, gene in enumerate(df[gene_col]):
         gene_indices[gene] = i
     for col in df.columns[1:]:
-        rankings[col] = list(zip(df['gene_symbols'], df[col]))
-    rankings[col].sort(key=lambda x: x[1])
+        rankings[col] = list(zip(df[gene_col], df[col]))
+        rankings[col].sort(key=lambda x: x[1], reverse=True)
     return rankings, gene_indices
 
 
-def mask(data: np.ndarray,
-         labels: np.ndarray,
+def mask(data: torch.tensor,
+         labels: torch.tensor,
          df: pd.DataFrame,
          rankings: Dict[str, List[Tuple[str, int]]],
          gene_indices: Dict[str, int],
-         threshold: float, ) -> np.ndarray:
+         threshold: float, ) -> torch.tensor:
     """
     Mask a batch of data based on ranking data and a threshold.
     This time we know that the genes in the ranking data are the same as the genes in the data points
@@ -37,9 +38,11 @@ def mask(data: np.ndarray,
     :param df: DataFrame with gene symbols as rows and perturbation names as columns with rankings as values
     :param rankings: Ranking data, Dict[label, ranking data]
     :param gene_indices: Dictionary that maps gene names to indices in the data array
-    :param threshold: Masking threshold
-    :return: Masked data, N x M array
+    :param threshold: Masking threshold, must be between 0 and 1
+    :return: Masked data, N x M tensor
     """
+    if threshold > 1 or threshold < 0:
+        raise ValueError("Threshold must be passed as a fractional value.")
     # Initialize masked data as a copy of the input data
     masked_data = np.copy(data)
     # Loop over the rows of data_point and label

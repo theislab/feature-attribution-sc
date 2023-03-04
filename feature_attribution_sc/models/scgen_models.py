@@ -125,9 +125,6 @@ class SCGENCustom(scgen.SCGEN):
 
     This only adds feature importance and threshold to the initialization and passes them to the VAE.
     """
-    This class inherits the original SCGEN class and overwrites the initialization. This only adds feature importance
-    and threshold to the initialization and passes them to the VAE.
-    """
 
     def __init__(
             self,
