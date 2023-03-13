@@ -92,20 +92,20 @@ class SCGENVAECustom(scgen.SCGENVAE):
         self.selected_genes = selected_genes
         self.labels = labels
 
+        # Generate the rankings dictionary
+        self.rankings, self.gene_indices = generate_rankings(self.feature_importance)
+
     def inference(self, x, y):
         """High level inference method.
 
         Runs the inference (encoder) model.
         """
-        # Generate the rankings dictionary
-        rankings, gene_indices = generate_rankings(self.feature_importance)
-
         x_masked = mask(
             data=x,
             labels=y,
             df=self.feature_importance,
-            rankings=rankings,
-            gene_indices=gene_indices,
+            rankings=self.rankings,
+            gene_indices=self.gene_indices,
             threshold=self.threshold)
         # x_masked = mask(x, y, self.feature_importance, self.threshold)
         qz_m, qz_v, z = self.z_encoder(x_masked)
