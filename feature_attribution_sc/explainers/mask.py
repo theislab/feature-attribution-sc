@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from typing import Dict, List, Tuple
 
-def validate_rankings(attrib_df: pd.DataFrame, adata: ad.AnnData):
+def validate_rankings(attrib_df: pd.DataFrame, adata):
     """
     Checks a dataframe of ranks against the adata to be ablated. If features do not match,
     returns a corrected dataframe (if correction was possible).
