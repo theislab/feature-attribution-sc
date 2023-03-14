@@ -44,7 +44,10 @@ def mask(data: torch.tensor,
     if threshold > 1 or threshold < 0:
         raise ValueError("Threshold must be passed as a fractional value.")
     # Initialize masked data as a copy of the input data
-    masked_data = np.copy(data)
+    if not torch.cuda.is_available():
+        masked_data = np.copy(data)
+    else:
+        masked_data = data.clone().detach()
     # Loop over the rows of data_point and label
     for i in range(len(data)):
         data_point = data[i]
@@ -62,5 +65,8 @@ def mask(data: torch.tensor,
             index = gene_indices[gene]
             mask[index] = 0
         # Multiply the data by the mask to zero out the specified values
-        masked_data[i] = data_point * mask
+        if not torch.cuda.is_available():
+            masked_data[i] = data_point * mask
+        else:
+            masked_data[i] = data_point * torch.tensor(mask).cuda()
     return torch.tensor(masked_data)
