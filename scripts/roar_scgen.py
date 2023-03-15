@@ -13,11 +13,47 @@ import scgen
 from feature_attribution_sc.explainers.mask import mask, generate_rankings, validate_rankings
 from feature_attribution_sc.models.scgen_models import SCGENCustom
 
+
+def write_settings(feature_importance, save_str, parameters):
+    """Writes model settings to a parameters.txt file in the model directory.
+
+    Params
+    ------
+    feature_importance : str
+        Path to the attribution .csv.
+    save_str : str
+        Path to the model directory.
+    parameters : dict
+        Contains hypermeters used to run the model.
+    """
+    from datetime import datetime
+
+    # write to same folder as model
+    with open(save_str + 'parameters.txt', 'w') as target:
+        target.write(
+f'''
+feature_importance file: {feature_importance}
+parameters: {parameters}
+trained by: {data_path}
+date: {datetime.today().strftime('%Y-%m-%d')}
+'''
+        )
+
+
+# dynamically generate absolute save path assuming dir structure
 data_path = "/".join(feature_importance.split("/")[:-3])
 print('Saving to', data_path)
 
 thresholds = list(range(10, 100, 10)) + [99]
 adata = sc.read(f'{data_path}/datasets/2301_scgen_norman19.h5ad')
+
+# model settings
+parameters = {
+    'n_hidden': 400,
+    'n_latent': 30,
+    'max_epochs': 50,
+    'batch_size': 32
+}
 
 #for feature_importance in feature_importance_files:
 attrib_df = pd.read_csv(feature_importance)
@@ -34,6 +70,8 @@ for threshold in thresholds:
     print(f'training {attrib_key} at threshold =', threshold)
     SCGENCustom.setup_anndata(adata, batch_key='perturbation_name')
     save_str = f'{data_path}/models/ROAR/scgen_norman19_ROAR_{attrib_key}_{iteration}_{threshold}'
-    model = SCGENCustom(adata, feature_importance=attrib_df, threshold=threshold/100, n_hidden=400, n_latent=30)
-    model.train(max_epochs=50, batch_size=32)
+    model = SCGENCustom(adata, feature_importance=attrib_df, threshold=threshold/100, n_hidden=parameters['n_hidden'], n_latent=parameters['n_latent'])
+    model.train(max_epochs=parameters['max_epochs'], batch_size=parameters['batch_size'])
+
     model.save(save_str, overwrite=True)
+    write_settings(feature_importance, save_str, parameters)
