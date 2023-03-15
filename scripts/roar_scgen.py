@@ -33,7 +33,7 @@ attrib_df = validate_rankings(attrib_df, adata)
 for threshold in thresholds:
     print(f'training {attrib_key} at threshold =', threshold)
     SCGENCustom.setup_anndata(adata, batch_key='perturbation_name')
-    save_str = f'{data_path}/models/scgen_norman19_ROAR_{attrib_key}_{iteration}_{threshold}'
+    save_str = f'{data_path}/models/ROAR/scgen_norman19_ROAR_{attrib_key}_{iteration}_{threshold}'
     model = SCGENCustom(adata, feature_importance=attrib_df, threshold=threshold/100, n_hidden=400, n_latent=30)
     model.train(max_epochs=50, batch_size=32)
     model.save(save_str, overwrite=True)
