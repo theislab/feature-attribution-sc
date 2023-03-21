@@ -14,3 +14,4 @@ dependencies:
    - pip
    - pip:
        - scgen==2.1.0
+       - jaxlib==0.4.1
