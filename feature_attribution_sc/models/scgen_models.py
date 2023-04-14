@@ -133,7 +133,8 @@ class SCGENCustom(scgen.SCGEN):
             n_latent: int = 100,
             n_layers: int = 2,
             dropout_rate: float = 0.2,
-            feature_importance=None,  # str,
+            feature_importance=None, # DataFrame
+            feature_importance_str=None, # str
             threshold=None,  # float,
             **model_kwargs,
     ):
@@ -142,6 +143,8 @@ class SCGENCustom(scgen.SCGEN):
         # labels = self.adata_manager.get_state_registry(REGISTRY_KEYS.LABELS_KEY)['categorical_mapping']
         # labels = self.adata_manager.get_state_registry(REGISTRY_KEYS.LABELS_KEY)['original_key']
         labels = self.adata_manager.registry['field_registries']['labels']['state_registry']['categorical_mapping']
+        self.feature_importance_str = feature_importance_str
+
         self.module = SCGENVAECustom(
             n_input=self.summary_stats.n_vars,
             n_hidden=n_hidden,
