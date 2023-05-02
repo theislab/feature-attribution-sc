@@ -53,7 +53,7 @@ def integrated_jacobian(func, inpt_dict, backprop_inpt_key, prime_inpt=None, n_s
     for i in range(n_steps):
         new_inpt_dict[backprop_inpt_key] = x_prime + x_diff * (i + 1) / n_steps
 
-        out = func(**new_inpt_dict)
+        out = func(new_inpt_dict['x'])
 
         jacs.append(batch_jacobian(out, x))
 
@@ -66,7 +66,7 @@ def run_expected_jacobian_scanvi(module_func, dl_base, dl_prime, n_steps=10, app
     for batch in dl_base:
         inpt_dict = batch_to_dict_scanvi(batch)
         inpt_dict["x"].requires_grad = True
-        inpt_dict["x"] = inpt_dict["x"].cuda()
+#        inpt_dict["x"] = inpt_dict["x"].cuda()
 
         inpt_batch_size = inpt_dict["x"].shape[0]
 
@@ -100,7 +100,7 @@ def run_integrated_jacobian_scanvi(module_func, dl_base, n_steps=10, apply_abs=F
     for batch in dl_base:
         inpt_dict = batch_to_dict_scanvi(batch)
         inpt_dict["x"].requires_grad = True
-        inpt_dict["x"] = inpt_dict["x"].cuda()
+#        inpt_dict["x"] = inpt_dict["x"].cuda()
 
         integr_jac_batch = integrated_jacobian(module_func, inpt_dict, "x", n_steps=n_steps)
         if apply_abs:
