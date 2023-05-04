@@ -3,6 +3,19 @@ import numpy as np
 import torch
 from typing import Dict, List, Tuple
 
+def validate_rankings(attrib_df: pd.DataFrame, adata):
+    """
+    Checks a dataframe of ranks against the adata to be ablated. If features do not match,
+    returns a corrected dataframe (if correction was possible).
+    """
+    n_features = attrib_df.shape[0]
+    if n_features < adata.shape[1]:
+        raise ValueError(
+            f"Attributions only calculated for {n_features} genes but adata has {adata.shape[1]}")
+    elif n_features > adata.shape[1]:
+        print(f'Only using attributions for {adata.shape[1]} genes.')
+        attrib_df = attrib_df.set_index('gene_symbols').loc[adata.var_names].reset_index()
+    return attrib_df
 
 def generate_rankings(df: pd.DataFrame, gene_col='gene_symbols') -> Tuple[Dict[str, List[Tuple[str, int]]], Dict[str, int]]:
     """
@@ -44,7 +57,10 @@ def mask(data: torch.tensor,
     if threshold > 1 or threshold < 0:
         raise ValueError("Threshold must be passed as a fractional value.")
     # Initialize masked data as a copy of the input data
-    masked_data = np.copy(data)
+    if not torch.cuda.is_available():
+        masked_data = np.copy(data)
+    else:
+        masked_data = data.clone().detach()
     # Loop over the rows of data_point and label
     for i in range(len(data)):
         data_point = data[i]
@@ -62,5 +78,8 @@ def mask(data: torch.tensor,
             index = gene_indices[gene]
             mask[index] = 0
         # Multiply the data by the mask to zero out the specified values
-        masked_data[i] = data_point * mask
+        if not torch.cuda.is_available():
+            masked_data[i] = data_point * mask
+        else:
+            masked_data[i] = data_point * torch.tensor(mask).cuda()
     return torch.tensor(masked_data)

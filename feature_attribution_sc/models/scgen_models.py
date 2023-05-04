@@ -92,20 +92,20 @@ class SCGENVAECustom(scgen.SCGENVAE):
         self.selected_genes = selected_genes
         self.labels = labels
 
+        # Generate the rankings dictionary
+        self.rankings, self.gene_indices = generate_rankings(self.feature_importance)
+
     def inference(self, x, y):
         """High level inference method.
 
         Runs the inference (encoder) model.
         """
-        # Generate the rankings dictionary
-        rankings, gene_indices = generate_rankings(self.feature_importance)
-
         x_masked = mask(
             data=x,
             labels=y,
             df=self.feature_importance,
-            rankings=rankings,
-            gene_indices=gene_indices,
+            rankings=self.rankings,
+            gene_indices=self.gene_indices,
             threshold=self.threshold)
         # x_masked = mask(x, y, self.feature_importance, self.threshold)
         qz_m, qz_v, z = self.z_encoder(x_masked)
@@ -133,7 +133,8 @@ class SCGENCustom(scgen.SCGEN):
             n_latent: int = 100,
             n_layers: int = 2,
             dropout_rate: float = 0.2,
-            feature_importance=None,  # str,
+            feature_importance=None, # DataFrame
+            feature_importance_str=None, # str
             threshold=None,  # float,
             **model_kwargs,
     ):
@@ -142,6 +143,8 @@ class SCGENCustom(scgen.SCGEN):
         # labels = self.adata_manager.get_state_registry(REGISTRY_KEYS.LABELS_KEY)['categorical_mapping']
         # labels = self.adata_manager.get_state_registry(REGISTRY_KEYS.LABELS_KEY)['original_key']
         labels = self.adata_manager.registry['field_registries']['labels']['state_registry']['categorical_mapping']
+        self.feature_importance_str = feature_importance_str
+
         self.module = SCGENVAECustom(
             n_input=self.summary_stats.n_vars,
             n_hidden=n_hidden,
