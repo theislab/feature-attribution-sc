@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import torch
+import jax
 from typing import Dict, List, Tuple
 
 def validate_rankings(attrib_df: pd.DataFrame, adata):
@@ -24,7 +25,7 @@ def generate_rankings(df: pd.DataFrame, gene_col='gene_symbols') -> Tuple[Dict[s
     :param df: DataFrame with gene symbols as rows and perturbation names as columns with rankings as values
     :return: Dictionary that maps perturbation names to lists of (gene symbol, ranking) tuples
     """
-    print(f'Generating rankings for {df.shape[1]} labels and {df.shape[0]} features.')
+    print(f'Generating rankings for {df.shape[1]-1} labels and {df.shape[0]} features.')
     rankings = {}
     gene_indices = {}
     for i, gene in enumerate(df[gene_col]):
@@ -78,7 +79,7 @@ def mask(data: torch.tensor,
             index = gene_indices[gene]
             mask[index] = 0
         # Multiply the data by the mask to zero out the specified values
-        if not torch.cuda.is_available():
+        if not torch.cuda.is_available() or len(jax.devices()) == 1:
             masked_data[i] = data_point * mask
         else:
             masked_data[i] = data_point * torch.tensor(mask).cuda()
