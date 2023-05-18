@@ -24,4 +24,5 @@ tasks=(
 #    2
 )
 
-python mask.py --csv ${files[$SLURM_ARRAY_TASK_ID]} --task ${tasks[$SLURM_ARRAY_TASK_ID]}  --thresholds 21 30
+source activate fa_base
+python mask.py --csv ${files[$SLURM_ARRAY_TASK_ID]} --task ${tasks[$SLURM_ARRAY_TASK_ID]}

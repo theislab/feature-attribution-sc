@@ -49,6 +49,61 @@ def generate_masked_inputs(attrib_df, thresholds, batch, class_label='labels'):
         
     return masked_inputs, incremental_sparsity
 
+def perform_label_transfer(ref_emb, query_emb, cell_type_column, k=15):
+    # calculate an object representing the joing neighbor graph of ref + query
+    try:
+        ing = sc.tl.Ingest(ref_emb)
+    except ValueError:
+        print('Failed to ingest due to duplicate cell embeddings.')
+        return -1
+    # calculate distances to top k neighbors for each cell and store indices
+    # of neighbor cells
+    top_k_indices, top_k_distances = ing._nnd_idx.query(ref_emb.X, k, epsilon=.1)
+    # transform distances with Gaussian kernel (?)
+    stds = np.std(top_k_distances, axis=1)
+    stds = (2.0 / stds) ** 2  # don't know why the first 2.0
+    stds = stds.reshape(-1, 1)
+    top_k_distances_tilda = np.exp(-np.true_divide(top_k_distances, stds))
+    # normalize so that transformed distances sum to 1
+    weights = top_k_distances_tilda / np.sum(
+        top_k_distances_tilda, axis=1, keepdims=True
+    )
+    # initialize empty series to store predicted labels and matching
+    # uncertaintites for every query cell
+    uncertainties = pd.Series(index=query_emb.obs_names, dtype="float64")
+    pred_labels = pd.Series(index=query_emb.obs_names, dtype="object")
+    # now loop through query cells
+    y_train_labels = ref_emb.obs[cell_type_column].values
+    for i in range(len(weights)):
+        # store cell types present among neighbors in reference
+        unique_labels = np.unique(y_train_labels[top_k_indices[i]])
+        # store best label and matching probability so far
+        best_label, best_prob = None, 0.0
+        # now loop through all cell types present among the cell's neighbors:
+        for candidate_label in unique_labels:
+            candidate_prob = weights[
+                i, y_train_labels[top_k_indices[i]] == candidate_label
+            ].sum()
+            if best_prob < candidate_prob:
+                best_prob = candidate_prob
+                best_label = candidate_label
+        else:
+            pred_label = best_label
+        # store best label and matching uncertainty
+        uncertainties.iloc[i] = max(1 - best_prob, 0)
+        pred_labels.iloc[i] = pred_label
+    # print info
+    print(
+        "Storing transferred labels in your query adata under .obs column:",
+        f"transf_{cell_type_column}",
+    )
+    print(
+        "Storing label transfer uncertainties in your query adata under .obs column:",
+        f"transf_{cell_type_column}_unc",
+    )
+    # store results
+    query_emb.obs[f"transf_{cell_type_column}"] = pred_labels
+    query_emb.obs[f"transf_{cell_type_column}_unc"] = uncertainties
 
 ### Add arguments ###
 parser = argparse.ArgumentParser()
@@ -64,12 +119,16 @@ args = parser.parse_args()
 task = args.task
 skip_zero = args.skip_zero
 model_file = args.model_file
-thresholds = list(args.thresholds)
+thresholds = args.thresholds
 if thresholds is None:
     thresholds = list(range(0, 100, 10)) + [99]
+else:
+    thresholds = list(thresholds)
 feature_importance = args.csv
 method = feature_importance.split("/")[-2]
 attrib_df = pd.read_csv(feature_importance)
+print('reading importance rankings from', feature_importance)
+print('and evaluate at', thresholds)
 
 ### Load data ###
 if task == 1:
@@ -82,7 +141,7 @@ elif task == 2:
     adata = sc.read('../datasets/hlca.h5ad')
     model = scvi.model.SCANVI.load('../models/scanvi_model/', adata)
 else:
-        raise ValueError('Task must be one of 1, 2, 3.')
+    raise ValueError('Task must be one of 1, 2, 3.')
 
 batch_size = adata.shape[0]
 scdl = model._make_data_loader(adata=adata, indices=list(range(adata.shape[0])), batch_size=batch_size)
@@ -95,7 +154,7 @@ if 'differential_expression' in feature_importance:
     attrib_df[attrib_df.columns[1:]] *= -1
 
 # TODO: placeholder for unlabeled for HLCA
-if task == 1 and 'unlabeled' not in attrib_df.columns:
+if task == 2 and 'unlabeled' not in attrib_df.columns:
     attrib_df['unlabeled'] = 0
 
 n_features = attrib_df.shape[0]
