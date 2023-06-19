@@ -7,6 +7,7 @@ import scanpy as sc
 import matplotlib.pyplot as plt
 import torch
 import scvi
+import scgen
 from feature_attribution_sc.explainers.mask import mask, generate_rankings
 
 sc.set_figure_params(dpi=100, frameon=False, color_map='Reds', facecolor=None)
@@ -174,8 +175,8 @@ plt.scatter(x, y, label=feature_importance.split('/')[-1].split('.')[0])
 plt.ylabel('frac non-zero')
 plt.xlabel('frac top important features masked')
 plt.legend(bbox_to_anchor=(1.01, 1.05))
-plt.savefig(f'sparsity_task{task}_{method}.png', bbox_inches='tight')
-pd.DataFrame(incremental_sparsity).to_csv(f'sparsity_task{task}_{method}.csv')
+plt.savefig(f'sparsity/task{task}_{method}.png', bbox_inches='tight')
+pd.DataFrame(incremental_sparsity).to_csv(f'sparsity/task{task}_{method}.csv')
 
 ### Forward pass through model ###
 for threshold in thresholds:
@@ -191,7 +192,7 @@ for threshold in thresholds:
         new_batch = batch.copy()
         new_batch['X'] = attribution_masks[f'masked_{threshold}']
 
-        adata.layers[obs_key] = model.module.forward(new_batch, compute_loss=False)[1]['px'].detach().numpy()
+        adata.layers[obs_key] = model.module.forward(new_batch, compute_loss=False)[1]['px'].cpu().detach().numpy()
 
     elif task == 2:
         adata.X = attribution_masks[f'masked_{threshold}']
