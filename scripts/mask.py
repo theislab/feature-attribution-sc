@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import torch
 import scvi
 import scgen
+import pynndescent
+
 from feature_attribution_sc.explainers.mask import mask, generate_rankings
 
 sc.set_figure_params(dpi=100, frameon=False, color_map='Reds', facecolor=None)
@@ -50,61 +52,48 @@ def generate_masked_inputs(attrib_df, thresholds, batch, class_label='labels'):
         
     return masked_inputs, incremental_sparsity
 
-def perform_label_transfer(ref_emb, query_emb, cell_type_column, k=15):
-    # calculate an object representing the joing neighbor graph of ref + query
-    try:
-        ing = sc.tl.Ingest(ref_emb)
-    except ValueError:
-        print('Failed to ingest due to duplicate cell embeddings.')
-        return -1
-    # calculate distances to top k neighbors for each cell and store indices
-    # of neighbor cells
-    top_k_indices, top_k_distances = ing._nnd_idx.query(ref_emb.X, k, epsilon=.1)
-    # transform distances with Gaussian kernel (?)
-    stds = np.std(top_k_distances, axis=1)
-    stds = (2.0 / stds) ** 2  # don't know why the first 2.0
-    stds = stds.reshape(-1, 1)
-    top_k_distances_tilda = np.exp(-np.true_divide(top_k_distances, stds))
-    # normalize so that transformed distances sum to 1
-    weights = top_k_distances_tilda / np.sum(
-        top_k_distances_tilda, axis=1, keepdims=True
-    )
-    # initialize empty series to store predicted labels and matching
-    # uncertaintites for every query cell
-    uncertainties = pd.Series(index=query_emb.obs_names, dtype="float64")
-    pred_labels = pd.Series(index=query_emb.obs_names, dtype="object")
-    # now loop through query cells
-    y_train_labels = ref_emb.obs[cell_type_column].values
-    for i in range(len(weights)):
+
+def label_with_knn_proba(ref, query, y_train_labels):
+    """
+    Params
+    ------
+    ref : np.array
+        First dim must match query.
+    query : np.array
+        First dim must match ref.
+    y_train_labels : list
+        Same length as ref.
+
+    Returns
+    -------
+    pred : predictions for `query`
+    """
+    # fit nearest neighbors (pretty slow even with pynndescent)
+    index = pynndescent.NNDescent(ref)
+    index.prepare()
+
+    k_nearest = 15
+    indices, weights = index.query(query, k_nearest, epsilon=.1)  # same parameters as in BP
+
+    pred = []
+    for i, idxs in enumerate(indices):
         # store cell types present among neighbors in reference
-        unique_labels = np.unique(y_train_labels[top_k_indices[i]])
+        unique_labels = np.unique(y_train_labels[idxs])
         # store best label and matching probability so far
         best_label, best_prob = None, 0.0
         # now loop through all cell types present among the cell's neighbors:
+        # TODO: there's almost certainly a major speedup that could be done here
         for candidate_label in unique_labels:
             candidate_prob = weights[
-                i, y_train_labels[top_k_indices[i]] == candidate_label
+                i, y_train_labels[idxs] == candidate_label
             ].sum()
             if best_prob < candidate_prob:
                 best_prob = candidate_prob
                 best_label = candidate_label
-        else:
-            pred_label = best_label
-        # store best label and matching uncertainty
-        uncertainties.iloc[i] = max(1 - best_prob, 0)
-        pred_labels.iloc[i] = pred_label
-    # print info
-    print(
-        "Storing transferred labels in your query adata under .obs column:",
-        f"transf_{cell_type_column}",
-    )
-    print(
-        "Storing label transfer uncertainties in your query adata under .obs column:",
-        f"transf_{cell_type_column}_unc",
-    )
-    # store results
-    query_emb.obs[f"transf_{cell_type_column}"] = pred_labels
-    query_emb.obs[f"transf_{cell_type_column}_unc"] = uncertainties
+
+        pred.append(best_label)
+
+    return pred
 
 ### Add arguments ###
 parser = argparse.ArgumentParser()
@@ -126,10 +115,15 @@ if thresholds is None:
 else:
     thresholds = list(thresholds)
 feature_importance = args.csv
-method = feature_importance.split("/")[-2]
+method = feature_importance.split("/")[-2] + "-" + feature_importance.split("/")[-1].split(".")[0]
 attrib_df = pd.read_csv(feature_importance)
 print('reading importance rankings from', feature_importance)
 print('and evaluate at', thresholds)
+
+sparsity_png_path = f'sparsity/task{task}_{method}.png'
+print('saving png at', sparsity_png_path)
+sparsity_csv_path = f'sparsity/task{task}_{method}.csv'
+print('saving csv at', sparsity_csv_path)
 
 ### Load data ###
 if task == 1:
@@ -175,9 +169,10 @@ plt.scatter(x, y, label=feature_importance.split('/')[-1].split('.')[0])
 plt.ylabel('frac non-zero')
 plt.xlabel('frac top important features masked')
 plt.legend(bbox_to_anchor=(1.01, 1.05))
-plt.savefig(f'sparsity/task{task}_{method}.png', bbox_inches='tight')
-pd.DataFrame(incremental_sparsity).to_csv(f'sparsity/task{task}_{method}.csv')
+plt.savefig(sparsity_png_path, bbox_inches='tight')
+pd.DataFrame(incremental_sparsity).to_csv(sparsity_csv_path)
 
+print('feeding through model')
 ### Forward pass through model ###
 for threshold in thresholds:
     if threshold == 0 and skip_zero:
@@ -197,19 +192,17 @@ for threshold in thresholds:
     elif task == 2:
         adata.X = attribution_masks[f'masked_{threshold}']
         X = model.get_latent_representation(adata)
-
-        ref_emb = ad.AnnData(X, obs=adata.obs)
-        print('calculating neighbors on ref embedding for', obs_key)
-        sc.pp.neighbors(ref_emb, n_neighbors=30)
-
         print('label transfer')
-        _ = perform_label_transfer(
-            ref_emb=ref_emb, query_emb=ref_emb, cell_type_column="scanvi_label"
-        )
+        adata.obs[obs_key] = label_with_knn_proba(ref=X, query=X, y_train_labels=adata.obs.scanvi_label.values)
 
-        if _ != -1:
-            adata.obs[obs_key] = ref_emb.obs['transf_scanvi_label'].copy()
+        print('label transfer to krasnow')
+        ref_adata = adata[adata.obs.dataset != 'Krasnow_2020']
+        ref = model.get_latent_representation(ref_adata)
+        X = model.get_latent_representation(adata[adata.obs.dataset == 'Krasnow_2020'])
 
+        # store values in the same adata, with dummy values where it doesn't apply
+        adata.obs[f'krasnow_{obs_key}'] = 'no_label'
+        adata.obs[f'krasnow_{obs_key}'][adata.obs.dataset == 'Krasnow_2020'] = label_with_knn_proba(ref=ref, query=X, y_train_labels=ref_adata.obs.scanvi_label.values)
 
 if task == 1:
     adata.write(f'masking_res_task{task}_{method}.h5ad')  # careful, this might become huge
