@@ -1,4 +1,5 @@
 import argparse
+import gc
 
 import numpy as np
 import pandas as pd
@@ -195,14 +196,16 @@ for threshold in thresholds:
         print('label transfer')
         adata.obs[obs_key] = label_with_knn_proba(ref=X, query=X, y_train_labels=adata.obs.scanvi_label.values)
 
-        print('label transfer to krasnow')
-        ref_adata = adata[adata.obs.dataset != 'Krasnow_2020']
-        ref = model.get_latent_representation(ref_adata)
-        X = model.get_latent_representation(adata[adata.obs.dataset == 'Krasnow_2020'])
+        for ds in ['Krasnow_2020', 'Banovich_Kropski_2020', 'Misharin_2021']:
+            print('label transfer to', ds)
+            ref_adata = adata[adata.obs.dataset != ds]
+            ref = model.get_latent_representation(ref_adata)
+            X = model.get_latent_representation(adata[adata.obs.dataset == ds])
 
-        # store values in the same adata, with dummy values where it doesn't apply
-        adata.obs[f'krasnow_{obs_key}'] = 'no_label'
-        adata.obs[f'krasnow_{obs_key}'][adata.obs.dataset == 'Krasnow_2020'] = label_with_knn_proba(ref=ref, query=X, y_train_labels=ref_adata.obs.scanvi_label.values)
+            # store values in the same adata, with dummy values where it doesn't apply
+            adata.obs[f'{ds}_{obs_key}'] = 'no_label'
+            adata.obs[f'{ds}_{obs_key}'][adata.obs.dataset == ds] = label_with_knn_proba(ref=ref, query=X, y_train_labels=ref_adata.obs.scanvi_label.values)
+            gc.collect()
 
 if task == 1:
     adata.write(f'masking_res_task{task}_{method}.h5ad')  # careful, this might become huge
