@@ -35,6 +35,10 @@ for i, file in enumerate(os.walk(data_path)):
 
         df = pd.read_csv(path)
 
+        ### check for feature column ###
+        if "gene_symbols" not in df.columns:
+            catch[path] = f"No column named 'gene_symbols' found."
+
         ### check that features are labeled ###
         if df.columns[0] != "gene_symbols":
             # correct if it's just misnamed

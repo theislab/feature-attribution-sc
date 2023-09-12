@@ -13,7 +13,6 @@ import scgen
 from feature_attribution_sc.explainers.mask import mask, generate_rankings, validate_rankings
 from feature_attribution_sc.models.scgen_models import SCGENCustom
 
-
 # dynamically generate absolute save path assuming dir structure
 data_path = "/".join(feature_importance.split("/")[:-3])
 print('Saving to', data_path)
